@@ -28,3 +28,14 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+
+.idea
+
+.php_cs.cache
+composer.lock
+.phpunit.cache/test-results
+*.rar
+*.zip
+.git_commands.md
+.mm.md

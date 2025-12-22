@@ -1,0 +1,44 @@
+{
+  "name": "maheralyamany/laravel-core-tools",
+  "description": "Core helpers and request security tools for Laravel",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Maher Alyamany",
+      "email": "maheralyamany4@gmail.com"
+    }
+  ],
+  "keywords": [
+    "Maher Alyamany",
+    "MaherAlyamany",
+    "maheralyamany",
+    "laravel",
+    "security",
+    "helpers",
+    "core"
+  ],
+  "support": {
+        "issues": "https://github.com/maheralyamany/laravel-core-tools/issues",
+        "source": "https://github.com/maheralyamany/laravel-core-tools"
+    },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Maher\\CoreTools\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Maher\\CoreTools\\CoreToolsServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "php": "^8.0|^8.1|^8.2|^8.3|^8.4",
+    "illuminate/support": "^10|^11|^12.0",
+    "illuminate/console": "^10.0|^11.0|^12.0"
+  }
+}
