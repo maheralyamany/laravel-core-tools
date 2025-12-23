@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Maher\CoreTools\Cache\Drivers;
 
+use Maher\CoreTools\Cache\Store\TaggedCustomCacheStore;
+
 class CustomTagSet extends \Illuminate\Cache\TagSet
 {
 	protected $hasTagNames = false;

@@ -7,6 +7,7 @@ namespace Maher\CoreTools\Core\Descriptor;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Maher\CoreTools\Core\Dynamic\DyHasAttributes;
+use Maher\CoreTools\Support\ArrayHelper;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -38,7 +39,7 @@ class ReflectionDescriptor  implements \ArrayAccess
 			$attributes['reflectionType'] = $this->getValidReflectionType($reflectionType, $reflectionClass);
 			$this->attributes = $attributes;
 		} catch (\Exception $th) {
-			dd($attributes, $th);
+		
 			//throw $th;
 		}
 	}

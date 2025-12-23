@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
  * @template-covariant TValue
  *
  */
-class MxCollection extends Collection
+class MCollection extends Collection
 {
     public function __construct($items = [])
     {

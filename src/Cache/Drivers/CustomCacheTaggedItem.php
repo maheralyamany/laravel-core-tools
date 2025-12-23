@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Maher\CoreTools\Cache\Drivers;
 
 use Illuminate\Support\Facades\File;
-
+use Maher\CoreTools\Cache\Store\TaggedCustomCacheStore;
 
 class CustomCacheTaggedItem extends \Illuminate\Cache\TaggedCache
 {

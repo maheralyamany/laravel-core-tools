@@ -380,7 +380,7 @@ class ParameterModifierAnalyzer
 			$param['paramStr'] = implode(" ", $_paramStr);
 			if ($checkParamExists != null) {
 				if ($checkParamExists($param)) {
-					dd($params, $param);
+					
 					return null;
 				}
 			}

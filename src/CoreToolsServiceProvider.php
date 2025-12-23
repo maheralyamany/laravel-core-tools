@@ -3,12 +3,10 @@ namespace Maher\CoreTools;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Event;
+
 use Maher\CoreTools\Support\HelpersLoader;
 use Maher\CoreTools\Security\Middleware\RequestSecurityMiddleware;
-use Maher\CoreTools\Security\Events\SuspiciousRequestDetected;
-use Maher\CoreTools\Security\Listeners\LogSuspiciousRequest;
-
+use Illuminate\Support\Facades\Config;
 class CoreToolsServiceProvider extends ServiceProvider
 {
     public function register(): void
@@ -19,6 +17,7 @@ class CoreToolsServiceProvider extends ServiceProvider
     public function boot(Router $router): void
     {
 
+        $this->registerLoggingChannel();
         if (app()->runningInConsole()) {
             $this->registerMigrations();
 
@@ -36,7 +35,7 @@ class CoreToolsServiceProvider extends ServiceProvider
 
         $router->aliasMiddleware('core.security', RequestSecurityMiddleware::class);
 
-        Event::listen(SuspiciousRequestDetected::class, LogSuspiciousRequest::class);
+        
     }
      /**
      * Register CoreTools's migration files.
@@ -47,6 +46,17 @@ class CoreToolsServiceProvider extends ServiceProvider
     {
         if (CoreTools::shouldRunMigrations()) {
             return $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        }
+    }
+    protected function registerLoggingChannel()
+    {
+         $channels = Config::get('logging.channels');
+         if (!isset($channels['security'])) {
+            Config::set('logging.channels.security', [
+                'driver' => 'daily',
+                'path' => storage_path('logs/security.log'),
+                'level' => 'warning',
+            ]);
         }
     }
 }

@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
-use Maher\CoreTools\Core\Helper\MxCollection;
+
 use Illuminate\Support\Collection;
-use Maher\CoreTools\Core\Helper\ArrayHelper;
+
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Enumerable;
+use Illuminate\Support\Str;
+use Maher\CoreTools\Support\ArrayHelper;
+use Maher\CoreTools\Support\MCollection;
 
 if (!function_exists('prepend_arr')) {
 	function prepend_arr(&$array, $value, $key = null)
@@ -587,7 +590,7 @@ if (!function_exists('arrayMGroupBy')) {
 	{
 		if (!m_empty($arry)) {
 			try {
-				return (new MxCollection($arry))->mxGroupBy($groupKey, $forgetKey, $preserveKeys)->toArray();
+				return (new MCollection($arry))->mxGroupBy($groupKey, $forgetKey, $preserveKeys)->toArray();
 			} catch (Throwable $th) {
 				//throw $th;
 			}
@@ -599,36 +602,14 @@ if (!function_exists('arrayMGroupBy')) {
 	}
 }
 
-if (!function_exists('forgetKeysIfExists')) {
-	function forgetKeysIfExists(Collection|array $arry, array $keys)
-	{
-		/* $data = collect($arry)->mapWithKeys(function ($value, $key) use ($groupKeys) {
-           			if ($groupKey == "stk_outs_batch_no")
-           				dd($value, $key, $groupKey, $arry);
-           			$dtl = arrayGroupBy($value, $groupKey, $forget_key, $level + 1);
-           			return [$key => $dtl];
-           		})->toArray();
-           
-           		return $data->toArray(); */
-	}
-}
+
 
 if (!function_exists('arrayGroupByKeys')) {
 	function arrayGroupByKeys(array $arry, array $groupKeys, $forgetKey = true, $preserveKeys = false): array
 	{
-		//$data = clone_array($arry);
-		$data = (new MxCollection($arry))->mxGroupBy($groupKeys, $forgetKey, $preserveKeys)->toArray();
-		/* if ($forget_key) {
-         			$data = $data->mapWithKeys(function ($value, $key) use ($groupKeys) {
-         				if ($groupKey == "stk_outs_batch_no")
-         					dd($value, $key, $groupKey, $arry);
-         				$dtl = arrayGroupBy($value, $groupKey, $forget_key, $level + 1);
-         				return [$key => $dtl];
-         			})->toArray();
-         		} */
-		/* foreach ($groupKeys as $key) {
-         			$data =	 arrayGroupBy($arry, $key, $forget_key);
-         		} */
+		
+		$data = (new MCollection($arry))->mxGroupBy($groupKeys, $forgetKey, $preserveKeys)->toArray();
+
 		return $data;
 	}
 }
@@ -724,7 +705,7 @@ if (!function_exists('isArrayNullOrZero')) {
 		try {
 			return is_null($value) || empty($value) || !isset($value) || count($value) === 0;
 		} catch (Throwable $throwable) {
-			report($throwable);
+			
 			throw $throwable;
 		}
 	}
@@ -796,15 +777,7 @@ if (!function_exists('clone_array')) {
 			return [];
 		}
 
-		/* foreach ($arr as $k => $v) {
-         			if (is_array($v)) {
-         				$clone[$k] = clone_array($v);
-         			} elseif (is_object($v)) {
-         				$clone[$k] = clone $v;
-         			} else {
-         				$clone[$k] = $v;
-         			}
-         		} */
+		
 		return collect($arr)->mapWithKeys(function ($v, $k) {
 			if (is_array($v)) {
 				return [
@@ -878,7 +851,7 @@ if (!function_exists('merge_assoc_array')) {
 					}
 				}
 			} catch (Exception $th) {
-				report($th);
+			
 			}
 		}
 
@@ -904,7 +877,7 @@ if (!function_exists('extend_muldim_array')) {
 					$arry[] = $value;
 				}
 			} catch (Exception $th) {
-				report($th);
+				
 			}
 		}
 

@@ -38,7 +38,13 @@
   },
   "require": {
     "php": "^8.0|^8.1|^8.2|^8.3|^8.4",
-    "illuminate/support": "^10|^11|^12.0",
-    "illuminate/console": "^10.0|^11.0|^12.0"
+    
+    "illuminate/support": ">=10.0",
+    "illuminate/console": ">=10.0",
+    "illuminate/config": ">=10.0",
+    "illuminate/cache": ">=10.0",
+    "illuminate/database": ">=10.0",
+    "illuminate/contracts": ">=10.0",
+    "illuminate/filesystem": ">=10.0"
   }
 }

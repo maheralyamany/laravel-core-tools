@@ -26,7 +26,7 @@ if (!function_exists('getDiffInDays')) {
 			$days = $interval->format('%a');
 			return intval($days);
 		} catch (\Throwable $th) {
-			report($th);
+			
 		}
 		return -1;
 	}
@@ -41,7 +41,7 @@ if (!function_exists('getPassedDaysFromNow')) {
 			$days = $interval->format('%a');
 			return intval($days);
 		} catch (\Throwable $th) {
-			report($th);
+		
 		}
 		return -1;
 	}
@@ -129,11 +129,12 @@ if (!function_exists('getValidStrDate')) {
 				return	$date->format('Y-m-d H:i:s');
 			}
 		} catch (\Throwable $th) {
-			report($th);
+			
 		}
 		return $date;
 	}
 }
+if (!function_exists('validateDateFormat')) {
 function validateDateFormat(&$date, $format = 'Y-m-d'): bool
 {
 	try {
@@ -149,10 +150,12 @@ function validateDateFormat(&$date, $format = 'Y-m-d'): bool
 		return $dateTime->format($format) === (new DateTime($date))->format($dateformat);
 	} catch (\Throwable $th) {
 		//logger('validateDateFormat', ['date' => $date, 'format' => $format]);
-		mx_report($th, ['date' => $date, 'format' => $format]);
+		
 		return false;
 	}
 }
+}
+if (!function_exists('transArDateToEn')) {
 function transArDateToEn(&$date): array|string
 {
 	$list = ["٠" => "0", "١" => "1", "٢" => "2", "٣" => "3", "٤" => "4", "٥" => "5", "٦" => "6", "٧" => "7", "٨" => "8", "٩" => "9",];
@@ -161,15 +164,18 @@ function transArDateToEn(&$date): array|string
 	}
 	return $date;
 }
+}
+if (!function_exists('validateDate')) {
 function validateDate($date, $format = 'Y-m-d')
 {
 	try {
 		$dateTime = DateTime::createFromFormat($format, ($date));
 		return $dateTime && $dateTime->format($format) === $date;
 	} catch (\Throwable $th) {
-		report($th);
+	
 		return false;
 	}
+}
 }
 if (!function_exists('current_date')) {
 	function current_date()
@@ -179,15 +185,7 @@ if (!function_exists('current_date')) {
 		return format_date("now");
 	}
 }
-if (!function_exists('get_doc_date')) {
-	function get_doc_date($item, $def_date = '')
-	{
-		if ($item != null) {
-			return format_date($item->doc_date);
-		}
-		return old('doc_date', is_null($def_date) ? current_date() : $def_date);
-	}
-}
+
 if (!function_exists('format_carbon_date')) {
 	function format_carbon_date($date, $def_date = null)
 	{

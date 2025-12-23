@@ -1,47 +1,7 @@
 <?php
-if (! function_exists('mx_logger')) {
-	/**
-	 * Log a debug message to the logs.
-	 *
-	 * @param  string  $message
-	 * @param  array  $context
-	 */
-	function mx_logger($message, array $context = [])
-	{
-		if (is_local_host()) {
-			logger($message, $context);
-		}
-	}
-}
-if (!function_exists('mx_report')) {
-	/**
-	 * Report an exception.
-	 *
-	 * @param  \Throwable|string  $exception
-	 * @param  array  $params
-	 * @return void
-	 */
-	function mx_report($exception, array $params = [])
-	{
-		if (is_string($exception)) {
-			//MxException
 
-			$exception = new \App\Exceptions\MxException($exception);
-		} else {
-			$exception = new \App\Exceptions\MxException($exception->getMessage(), $exception->getCode());
-		}
-		//	if (count($params) > 0)
-		$exception->params = $params;
+use Illuminate\Support\Str;
 
-		report($exception);
-	}
-}
-if (!function_exists('isLocalEnv')) {
-	function isLocalEnv(): bool
-	{
-		return config('app.env') !== 'production';
-	}
-}
 if (!function_exists('m_empty')) {
 	function m_empty(mixed $value): bool
 	{
@@ -258,7 +218,7 @@ if (!function_exists('parseInt')) {
 
 			return $value;
 		} catch (Throwable $throwable) {
-			report($throwable);
+		
 			return intval(def_value($def_val) ?? 0);
 		}
 	}
@@ -288,7 +248,7 @@ if (!function_exists('parseFloat')) {
 		try {
 			return is_null($value) || empty($value) ? 0 : floatval($value);
 		} catch (Throwable $throwable) {
-			report($throwable);
+		
 			return $value;
 		}
 	}
@@ -356,7 +316,7 @@ if (!function_exists('toArray')) {
 				return $notArraycallback();
 			}
 		} catch (\Throwable $th) {
-			dd($value, $th);
+		
 			//throw $th;
 		}
 		return [$value];
@@ -465,7 +425,7 @@ if (!function_exists('decimal_format')) {
 			$number = floatval($number);
 			return number_format($number, $decimals, $decimal_separator, $thousands_separator);
 		} catch (\Throwable $th) {
-			report($th);
+			
 			return $number;
 		}
 	}
@@ -491,25 +451,7 @@ if (!function_exists('toStringArrayIds')) {
 		return ($id > 0 || $withZero) ? [strval($id)] : [];
 	}
 }
-if (!function_exists('asset_version')) {
-	function asset_version($withPrfix = true)
-	{
-		$version = config('app.asset_version');
-		if ($withPrfix)
-			return "?v=" . $version;
-		return $version;
-	}
-}
-if (!function_exists('add_asset_version')) {
-	function add_asset_version(&$url)
-	{
-		//
-		if (!str_contains($url, '?v=') && !str_contains($url, '?version=')) {
-			$url .= asset_version();
-		}
-		return $url;
-	}
-}
+
 if (!function_exists('strBase64DecodeAll')) {
 	function strBase64DecodeAll(...$strings)
 	{
@@ -521,16 +463,4 @@ if (!function_exists('strBase64DecodeAll')) {
 		return $results;
 	}
 }
-if (!function_exists('strBase64Decode')) {
-	function strBase64Decode(string $string, bool $strict = false)
-	{
-		$result = base64_decode($string, $strict);
-		/* if (!empty($string)) {
-			$key = Str::replace(":", "", $string);
-			//Cache::put()
-			//taggedCache()->tags(['base64_decode'])->add($key,$json, 60 * 60 * 12);
-			taggedCache()->add('base64_decode:' . $key, ['base64' => $string, 'result' => $result], 60 * 60 * 12);
-		} */
-		return $result;
-	}
-}
+
