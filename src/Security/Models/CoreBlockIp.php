@@ -57,7 +57,7 @@ class CoreBlockIp extends Model
    */
   public function getTable(): string
   {
-   
+
     return  SecurityHelper::getBlockIpsTableName();
   }
   /**
@@ -67,15 +67,15 @@ class CoreBlockIp extends Model
    */
   public function getConnectionName()
   {
-   
+
     return SecurityHelper::getBlockIpsConnectionName();
   }
-  
+
   public static function createIfNotExists(string $ip, array $attributes = []): bool
   {
     $user_id = $attributes['user_id'] ?? 0;
-
-    if (!static::isIpBlocked($ip) || $user_id > 0) {
+    static::clearCacheBlocked($ip);
+    if (!static::query()->where('ip', $ip)->exists() || $user_id > 0) {
       $item = static::create([
         'ip' => $ip,
         'user_id' => $user_id,
@@ -102,5 +102,9 @@ class CoreBlockIp extends Model
     //$exists = static::query()->where('ip', $ip)->count('ip') > 0;
 
     return (bool)$exists;
+  }
+  public static function clearCacheBlocked($ip)
+  {
+    Cache::forget("blocked_ip_" . $ip);
   }
 }

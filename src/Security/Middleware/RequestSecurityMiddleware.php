@@ -22,7 +22,7 @@ class RequestSecurityMiddleware
             }
             if (config('core-tools.modules.ip_guard') && !(new IpGuard)->isAllowed($request)) {
                 $hasMaliciousRequest = true;
-                return $this->errorResponse($request);
+                return $this->errorResponse($request,403,"Bad Request: Blocked Ip detected.");
             }
 
             if (config('core-tools.modules.rate_limit') && (new AdvancedRateLimiter)->tooManyAttempts($request)) {
