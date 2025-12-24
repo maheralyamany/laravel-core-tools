@@ -12,6 +12,7 @@ use Maher\CoreTools\Cache\Store\TaggedCustomCacheStore;
 use Maher\CoreTools\Support\CoreToolsConstants;
 use Illuminate\Support\{Arr, Collection, Str};
 use Maher\CoreTools\Support\{StringHelper, ArrayToPhpConverter, ArrayComparator, ArrayHelper, CollectionHelper};
+use Illuminate\Contracts\Http\Kernel;
 
 class CoreToolsServiceProvider extends ServiceProvider
 {
@@ -21,11 +22,8 @@ class CoreToolsServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/core-tools.php', 'core-tools');
     }
 
-    public function boot(Router $router): void
+    public function boot(Kernel $kernel, Router $router): void
     {
-
-
-
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/core-tools.php' => config_path('core-tools.php'),
@@ -34,7 +32,6 @@ class CoreToolsServiceProvider extends ServiceProvider
                 __DIR__ . '/../resources/views' => base_path('resources/views/vendor/core-tools'),
             ], 'views');
             $this->registerMigrations();
-
             $this->publishes([
                 __DIR__ . '/../database/migrations' => database_path('migrations'),
             ], 'core-tools-migrations');
@@ -43,9 +40,8 @@ class CoreToolsServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'core-tools');
         $this->registerCacheStores();
         $this->registerLoggingChannel();
-        HelpersLoader::load(__DIR__ . '/Helpers');
-
-        $router->aliasMiddleware('core.security', RequestSecurityMiddleware::class);
+        //HelpersLoader::load(__DIR__ . '/Helpers');
+        $this->registerMiddlewares($kernel, $router);
     }
     /**
      * Register CoreTools's migration files.
@@ -56,6 +52,29 @@ class CoreToolsServiceProvider extends ServiceProvider
     {
         if (CoreTools::shouldRunMigrations()) {
             return $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        }
+    }
+    protected function registerMiddlewares(Kernel $kernel, Router $router)
+    {
+        if (config('core-tools.security.enabled', true)) {
+
+            /**
+             * 1️⃣ Register middleware alias (routes/controllers)
+             * Works in Laravel 10, 11, 12
+             */
+            $router->aliasMiddleware(
+                'core.security',
+                RequestSecurityMiddleware::class
+            );
+
+            /**
+             * 2️⃣ Register as GLOBAL middleware
+             * Works in Laravel 10, 11, 12
+             */
+            $kernel->pushMiddleware(
+                RequestSecurityMiddleware::class
+            );
+            //$kernel->appendMiddlewareToGroup('web', RequestSecurityMiddleware::class);
         }
     }
     protected function registerCacheStores()

@@ -1,7 +1,7 @@
 {
   "name": "maheralyamany/laravel-core-tools",
   "description": "Core helpers and request security tools for Laravel",
-   "homepage": "https://github.com/maheralyamany/laravel-core-tools",
+  "homepage": "https://github.com/maheralyamany/laravel-core-tools",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -20,15 +20,23 @@
     "core"
   ],
   "support": {
-        "issues": "https://github.com/maheralyamany/laravel-core-tools/issues",
-        "source": "https://github.com/maheralyamany/laravel-core-tools"
-    },
+    "issues": "https://github.com/maheralyamany/laravel-core-tools/issues",
+    "source": "https://github.com/maheralyamany/laravel-core-tools"
+  },
   "minimum-stability": "stable",
   "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Maher\\CoreTools\\": "src/"
-    }
+    },
+    "files": [
+      "src/Helpers/arrayHelper.php",
+      "src/Helpers/baseHelper.php",
+      "src/Helpers/datetimeHelper.php",
+      "src/Helpers/languageHelper.php",
+      "src/Helpers/routeHelper.php",
+      "src/helpers/strHelper.php"
+    ]
   },
   "extra": {
     "laravel": {
@@ -39,7 +47,6 @@
   },
   "require": {
     "php": "^8.0|^8.1|^8.2|^8.3|^8.4",
-    
     "illuminate/support": ">=10.0",
     "illuminate/console": ">=10.0",
     "illuminate/config": ">=10.0",
