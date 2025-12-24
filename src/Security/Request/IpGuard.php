@@ -3,11 +3,13 @@
 namespace Maher\CoreTools\Security\Request;
 
 use Illuminate\Http\Request;
+use Maher\CoreTools\Security\Models\CoreBlockIp;
 
 class IpGuard
 {
     public function isAllowed(Request $r): bool
     {
-        return !in_array($r->ip(), config('core-tools.security.blocked_ips', []), true);
+        
+        return !CoreBlockIp::isIpBlocked($r->ip());
     }
 }

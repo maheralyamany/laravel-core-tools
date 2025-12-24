@@ -2,6 +2,8 @@
 
 namespace Maher\CoreTools\Support;
 
+use Illuminate\Support\Str;
+
 class StringHelper
 {
 	public static function removeComments($content, $commentTypes = [
@@ -46,7 +48,7 @@ class StringHelper
 			return false;
 		foreach ($needles as $needle) {
 
-			if (\Str::contains($haystack, $needle, $ignoreCase))
+			if (Str::contains($haystack, $needle, $ignoreCase))
 				return true;
 		}
 		return false;

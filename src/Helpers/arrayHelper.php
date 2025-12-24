@@ -121,7 +121,10 @@ if (!function_exists('index_off_key')) {
 if (!function_exists('get_array_diff')) {
 	function get_array_diff($array1, $array2): array
 	{
-		$newArry = count($array1) > 0 ? array_diff($array1, $array2) : array_diff($array2, $array1);
+		if (\count($array1) > 0)
+			$newArry = array_diff($array1, $array2);
+		else
+			$newArry = array_diff($array2, $array1);
 		return array_values($newArry);
 	}
 }
@@ -131,14 +134,12 @@ if (!function_exists('get_dy_array_diff')) {
 	{
 		$arrCount1 = count($array1);
 		$arrCount2 = count($array2);
-		if ($arrCount1 > 0 && $arrCount1 > $arrCount2) {
+		if ($arrCount1 > 0 && $arrCount1 > $arrCount2)
 			$newArry = array_diff($array1, $array2);
-		} elseif ($arrCount2 > 0) {
+		elseif ($arrCount2 > 0)
 			$newArry = array_diff($array2, $array1);
-		} else {
+		else
 			$newArry = $array1;
-		}
-
 		return array_values($newArry);
 	}
 }
@@ -149,43 +150,33 @@ if (!function_exists('array_shared_values')) {
 		return array_uniquex(array_merge(array_intersect($array1, $array2), array_intersect($array2, $array1)));
 	}
 }
-
 if (!function_exists('array_has_array')) {
 	function array_has_array(array $src_array, array $array2): bool
 	{
-		if ($array2 === []) {
+		if (\count($array2) == 0)
 			return true;
-		}
-
-		$array = collect($src_array)->mapWithKeys(fn($v, $k) => [
-			$k => Str::lower($v),
-		])->toArray();
+		$array = collect($src_array)->mapWithKeys(fn($v, $k) => [$k => Str::lower($v)])->toArray();
 		foreach ($array2 as $val) {
-			if (in_array(Str::lower($val), $array)) {
+			if (\in_array(Str::lower($val), $array))
 				return true;
-			}
 		}
-
 		return false;
 	}
 }
+
 
 if (!function_exists('array_contains_all')) {
 	function array_contains_all(array $src_array, array $array2): bool
 	{
 		$arr_count = count($array2);
-		if ($arr_count === 0) {
+		if ($arr_count == 0)
 			return true;
-		}
-
 		$_count = 0;
 		foreach ($array2 as $val) {
-			if (in_array($val, $src_array)) {
+			if (\in_array($val, $src_array))
 				$_count += 1;
-			}
 		}
-
-		return $_count === $arr_count;
+		return $_count == $arr_count;
 	}
 }
 
@@ -205,7 +196,7 @@ if (!function_exists('json_array')) {
 	 */
 	function json_array($arr, int $depth = 512)
 	{
-		return arr()->toJsonArray($arr, $depth);
+		return ArrayHelper::toJsonArray($arr, $depth);
 	}
 }
 if (!function_exists('valid_json_array')) {
@@ -213,31 +204,13 @@ if (!function_exists('valid_json_array')) {
 	function valid_json_array($data, int $depth = 512)
 	{
 		$array = toArray($data);
-		return arr()->toJsonArray($array, $depth);
+		return ArrayHelper::toJsonArray($array, $depth);
 	}
 }
 
 
 
-if (!function_exists('strContainsAny')) {
-	/**
-	 * Determine if a given string contains any array values.
-	 *
-	 * @param  string  $haystack
-	 * @param  iterable<string>  $needles
-	 * @param  bool  $ignoreCase
-	 */
-	function strContainsAny($haystack, $needles, $ignoreCase = true): bool
-	{
-		foreach ($needles as $needle) {
-			if (Str::contains($haystack, $needle, $ignoreCase)) {
-				return true;
-			}
-		}
 
-		return false;
-	}
-}
 
 if (!function_exists('filter_array')) {
 	function filter_array(array $array, ?callable $callback = null)
@@ -269,14 +242,12 @@ if (!function_exists('array_has_key')) {
 	 */
 	function array_has_key(array $arr, string $key)
 	{
-		if ($arr === []) {
+		if (\count($arr) == 0)
 			return false;
-		}
-		if (Arr::isAssoc($arr)) {
+		if (Arr::isAssoc($arr))
 			return Arr::hasAny($arr, $key);
-		}
-		return collect($arr[0])->filter(function ($value, $k) use ($key): bool {
-			return $k == $key || is_array($value) && array_key_exists($key, $value);
+		return collect($arr[0])->filter(function ($value, $k) use ($key) {
+			return ($k == $key || (\is_array($value) && key_exists($key, $value)));
 		})->count() > 0;
 	}
 }
@@ -287,7 +258,7 @@ if (!function_exists('arrayKeyExists')) {
 	 */
 	function arrayKeyExists(array $array, $key)
 	{
-		if ($array === []) {
+		if (empty($array)) {
 			return false;
 		}
 		return array_key_exists($key, $array);
@@ -300,7 +271,7 @@ if (!function_exists('array_keys_exists')) {
 	 */
 	function array_keys_exists(array $array,   ...$keys): bool
 	{
-		$count = arr()->count($keys, fn($key, $index) => array_key_exists($key, $array));
+		$count = ArrayHelper::count($keys, fn($key, $index) => array_key_exists($key, $array));
 		return $count == count($keys);
 	}
 }
@@ -313,7 +284,7 @@ if (!function_exists('array_contains_keys')) {
 	 */
 	function array_contains_keys(array $array, array $keys): bool
 	{
-		$ff = arr()->count($array, function ($v, $k) use ($keys): bool {
+		$ff = ArrayHelper::count($array, function ($v, $k) use ($keys): bool {
 			return in_array($k, $keys);
 		});
 		return $ff > 0;
@@ -337,15 +308,11 @@ if (!function_exists('compare_arrays')) {
 	 */
 	function compare_arrays(array $array1, array $array2): bool
 	{
-		if ($array1 === [] && $array2 === []) {
+		if (\count($array1) == 0 && count($array2) == 0)
 			return true;
-		}
-
-		if (array_intersect($array1, $array2) !== []) {
+		if (\count(array_intersect($array1, $array2)) > 0)
 			return true;
-		}
-
-		return array_intersect($array2, $array1) !== [];
+		return count(array_intersect($array2, $array1)) > 0;
 	}
 }
 
@@ -361,7 +328,6 @@ if (!function_exists('array_group_by_key')) {
 		if (isArrayNullOrZero($array)) {
 			return [];
 		}
-
 		$collect = collect($array);
 		return $collect->mapToGroups(function ($col) use ($key) {
 			$col = (array) $col;
@@ -438,7 +404,7 @@ if (!function_exists('unset_exists')) {
 		if (isset($arr[$key]) || array_key_exists($key, $arr)) {
 			unset($arr[$key]);
 		} elseif (isList($arr)) {
-			$arr = array_values(arr()->where($arr, fn($value): bool => $value !== $key));
+			$arr = array_values(Arr::where($arr, fn($value): bool => $value !== $key));
 		}
 
 		return $arr;
@@ -463,73 +429,90 @@ if (!function_exists('unset_exist_keys')) {
 
 if (!function_exists('serializeGroupedAssocCollect')) {
 	/**
-	 * @param Collection $collect
+	
+	 * @param \Illuminate\Support\Collection $collect
 	 * @param boolean $pluck
-	 * @return Collection
+	 * @return \Illuminate\Support\Collection
 	 */
 	function serializeGroupedAssocCollect($collect, $pluck = false)
 	{
 		$level = 0;
-		$arr = $collect->mapWithKeys(function ($v, $k) use ($pluck, $level) {
-			if ($v instanceof Arrayable) {
-				$v = collect($v)->toArray();
+		$arr = $collect->mapWithKeys(function ($val, $k) use ($pluck, $level) {
+			if ($val instanceof Arrayable) {
+				$val = collect($val)->toArray();
 			}
+			$ser = serializeAssocArray($val, $pluck, $level + 1);
+			if (is_array($ser)  && $pluck) {
+				if (Arr::isAssoc($ser)) {
 
-			$ser = serializeAssocArray($v, $pluck, 1);
-			return [
-				$k => $ser,
-			];
+					$count = collect($ser)->filter(fn($vv, $kk) => !is_array($vv) && $kk === $vv)->count();
+					if ($count === count($ser)) {
+						$ser = array_keys($ser);
+					}
+				}
+				$ser = array_unique($ser);
+				if (count($ser) == 1 && !Arr::isAssoc($ser))
+					$ser = $ser[0];
+			}
+			//dd($ser, $val, $k);
+			return [$k => $ser];
 		});
-		$emptykeys = $arr->filter(function ($v, $k): bool {
-			return is_array($v) && $v === [];
+		$emptykeys = $arr->filter(function ($v, $k) {
+			return (\is_array($v) && count($v) == 0);
 		})->count();
-		if (count($arr) == $emptykeys) {
+		if (\count($arr) == $emptykeys) {
 			return $arr->keys();
 		}
-
 		return $arr;
 	}
 }
-
+if (!function_exists('serializeGroupedAssoc')) {
+	/**
+	
+	 * @param array $array
+	 * @param boolean $pluck
+	 * @return array
+	 */
+	function serializeGroupedAssoc($array, $pluck = false)
+	{
+		return serializeGroupedAssocCollect(collect($array), $pluck)->all();
+	}
+}
 if (!function_exists('serializeAssocArray')) {
 	function serializeAssocArray($val, bool $pluck = false, $level = 0)
 	{
-		if (is_array($val) && !m_empty($val)) {
-			if (Arr::isAssoc($val)) {
-				if ($pluck && count($val) === 1) {
-					$arrv = array_values($val);
-					if ($level > 0 || !is_array($arrv[0])) {
-						//	dd($arrv, $arrv[0]);
-						return $arrv[0];
+		if (\is_array($val)) {
+			if (!m_empty($val)) {
+				if (Arr::isAssoc($val)) {
+					if ($pluck && count($val) == 1) {
+						$arrv = array_values($val);
+						$firstval = $arrv[0];
+						if ($level > 0 || !\is_array($firstval)) {
+							return $firstval;
+						}
 					}
+					$arr = collect($val)->mapWithKeys(function ($v, $k) use ($pluck, $level) {
+						$ser = serializeAssocArray($v, $pluck, $level + 1);
+						return [$k => $ser];
+					});
+					$emptykeys = $arr->filter(function ($v, $k) {
+						return (\is_array($v) && count($v) == 0);
+					})->count();
+					if (\count($arr) == $emptykeys) {
+						return $arr->keys()->toArray();
+					}
+					return $arr->toArray();
+				} elseif (\count($val) == 1) {
+					return	serializeAssocArray($val[0], $pluck, $level + 1);
+				} elseif (\count($val) > 1) {
+					$list = [];
+					foreach ($val as $v) {
+						$list[] =	serializeAssocArray($v, $pluck, $level + 1);
+					}
+					return	$list;
 				}
-
-				$arr = collect($val)->mapWithKeys(function ($v, $k) use ($pluck, $level) {
-					$ser = serializeAssocArray($v, $pluck, $level + 1);
-					return [
-						$k => $ser,
-					];
-				});
-				$emptykeys = $arr->filter(function ($v, $k): bool {
-					return is_array($v) && $v === [];
-				})->count();
-				if (count($arr) == $emptykeys) {
-					return $arr->keys()->toArray();
-				}
-
-				return $arr->toArray();
-			} elseif (count($val) === 1) {
-				return serializeAssocArray($val[0], $pluck, $level + 1);
-			} elseif (count($val) > 1) {
-				$list = [];
-				foreach ($val as $v) {
-					$list[] = serializeAssocArray($v, $pluck, $level + 1);
-				}
-
-				return $list;
 			}
 		}
-
 		return $val;
 	}
 }
@@ -537,14 +520,16 @@ if (!function_exists('serializeAssocArray')) {
 if (!function_exists('arrayGroupAndSerializeBy')) {
 	function arrayGroupAndSerializeBy(array $arry, string $groupKey, bool $pluck = false, $forget_key = true): array
 	{
-		return m_empty($arry) ? [] : serializeAssocArray(arrayGroupBy($arry, $groupKey, $forget_key), $pluck);
+		$arr = !m_empty($arry) ? serializeAssocArray(arrayGroupBy($arry, $groupKey, $forget_key), $pluck) : [];
+		return $arr;
 	}
 }
 
 if (!function_exists('arrayGroupAndSerializeByKeys')) {
 	function arrayGroupAndSerializeByKeys(array $arry, array $groupKeys, bool $pluck = false, $forget_key = true): array
 	{
-		return m_empty($arry) ? [] : serializeAssocArray(arrayGroupByKeys($arry, $groupKeys, $forget_key), $pluck);
+		$arr = !m_empty($arry) ? serializeAssocArray(arrayGroupByKeys($arry, $groupKeys, $forget_key), $pluck) : [];
+		return $arr;
 	}
 }
 
@@ -554,50 +539,42 @@ if (!function_exists('arrayGroupBy')) {
 		if (!m_empty($arry)) {
 			try {
 				if (array_has_key($arry, $groupKey)) {
-					return collect($arry)->groupBy($groupKey)->mapWithKeys(function ($value, $key) use ($groupKey, $forget_key) {
+					$data = collect($arry)->groupBy($groupKey)->mapWithKeys(function ($value, $key) use ($groupKey, $forget_key) {
 						$dtl = collect($value)->mapWithKeys(function ($v, $k) use ($groupKey, $forget_key) {
-							if ($forget_key && is_array($v)) {
+							if ($forget_key && \is_array($v))
 								$v = unset_exists($v, $groupKey);
-							}
-
-							return [
-								$k => $v,
-							];
+							return [$k => $v];
 						})->toArray();
-						return [
-							$key => $dtl,
-						];
+						return [$key => $dtl];
 					})->toArray();
+					return 	$data;
 				} elseif (Arr::isAssoc($arry)) {
-					return collect($arry)->mapWithKeys(function ($value, $key) use ($groupKey, $forget_key, $level) {
+					$data = collect($arry)->mapWithKeys(function ($value, $key) use ($groupKey, $forget_key, $level) {
 						$dtl = arrayGroupBy($value, $groupKey, $forget_key, $level + 1);
-						return [
-							$key => $dtl,
-						];
+						return [$key => $dtl];
 					})->toArray();
+					return 	$data;
 				}
-			} catch (Throwable $th) {
+			} catch (\Throwable $th) {
 				//throw $th;
 			}
 		}
-
 		return $arry;
 	}
 }
 
 if (!function_exists('arrayMGroupBy')) {
-	function arrayMGroupBy(array $arry, string $groupKey, $forgetKey = true, $preserveKeys = false): array
+	function arrayMGroupBy(array $arry, string $groupKey, $forgetKey = true, $preserveKeys = false, bool $pluckEmpty = false): array
 	{
 		if (!m_empty($arry)) {
 			try {
-				return (new MCollection($arry))->mxGroupBy($groupKey, $forgetKey, $preserveKeys)->toArray();
-			} catch (Throwable $th) {
+				$data = collect($arry)->mGroupBy($groupKey, $forgetKey, $preserveKeys, $pluckEmpty)->toArray();
+				return $data;
+			} catch (\Throwable $th) {
 				//throw $th;
 			}
-
 			return arrayGroupBy($arry, $groupKey, $forgetKey);
 		}
-
 		return $arry;
 	}
 }
@@ -605,10 +582,10 @@ if (!function_exists('arrayMGroupBy')) {
 
 
 if (!function_exists('arrayGroupByKeys')) {
-	function arrayGroupByKeys(array $arry, array $groupKeys, $forgetKey = true, $preserveKeys = false): array
+	function arrayGroupByKeys(array $arry, array $groupKeys, $forgetKey = true, $preserveKeys = false, bool $pluckEmpty = false): array
 	{
-		
-		$data = (new MCollection($arry))->mxGroupBy($groupKeys, $forgetKey, $preserveKeys)->toArray();
+
+		$data = collect($arry)->mGroupBy($groupKeys, $forgetKey, $preserveKeys, $pluckEmpty)->toArray();
 
 		return $data;
 	}
@@ -621,16 +598,10 @@ if (!function_exists('getGroupedArrayKeys')) {
 		foreach ($groupKeys as $index => $key) {
 			$res = collect($arry)->groupBy($key)->keys()->toArray();
 			foreach ($res as $k) {
-				if (!m_empty($k)) {
-					$result[] = (object) [
-						'key' => $key,
-						'value' => $k,
-						'index' => $index,
-					];
-				}
+				if (!m_empty($k))
+					$result[] = (object)['key' => $key, 'value' => $k, 'index' => $index];
 			}
 		}
-
 		return $result;
 	}
 }
@@ -638,11 +609,10 @@ if (!function_exists('getGroupedArrayKeys')) {
 if (!function_exists('array_max_key')) {
 	function array_max_key(array $arr, int $incrment = 1): string
 	{
-		$max_key = $arr !== [] ? max(array_keys($arr)) : 0;
-		/* 	if (key_exists($max_key, $arr)) {
-          			return array_max_key($arr,$incrment+1);
-          		} */
-		return strval(intval($max_key) + $incrment);
+		$max_key = (count($arr) > 0) ? max(array_keys($arr)) : 0;
+		$max_key = strval(intval($max_key) + $incrment);
+
+		return $max_key;
 	}
 }
 
@@ -664,7 +634,7 @@ if (!function_exists('isAssoc')) {
 if (!function_exists('isPluckArr')) {
 	function isPluckArr(array $arr): bool
 	{
-		return $arr === [] || count(array_filter(array_keys($arr), 'is_int')) === count($arr);
+		return empty($arr) || count(array_filter(array_keys($arr), 'is_int')) === count($arr);
 	}
 }
 
@@ -672,16 +642,13 @@ if (!function_exists('is_pluck_array')) {
 	function is_pluck_array($array)
 	{
 		$array = get_arrayable_items($array);
-		if (!is_array($array)) {
+		if (!\is_array($array)) {
 			$array = $array->toArray();
 		}
-
-		if (count($array) <= 0) {
+		if (\count($array) <= 0) {
 			return false;
 		}
-
 		return isPluckArr($array);
-		//return count(array_filter(array_keys($array), 'is_int')) > 0;
 	}
 }
 
@@ -694,46 +661,37 @@ if (!function_exists('isArrayNullOrZero')) {
 	 */
 	function isArrayNullOrZero($value)
 	{
-		if (!is_array($value)) {
-			if (is_null($value)) {
+		if (!\is_array($value)) {
+			if (\is_null($value)) {
 				return true;
 			}
-
 			$value = get_arrayable_items($value);
 		}
-
 		try {
-			return is_null($value) || empty($value) || !isset($value) || count($value) === 0;
-		} catch (Throwable $throwable) {
-			
-			throw $throwable;
+			return (is_null($value) || empty($value) || !isset($value) || sizeof($value) == 0);
+		} catch (\Throwable $th) {
+
+			return empty($value);
 		}
 	}
 }
 
 if (!function_exists('arrayParseKeysPath')) {
-	function arrayParseKeysPath($array, $exceptKeys = [], $separator = '.'): array
+	function arrayParseKeysPath($array, $exceptKeys = [], $separator = '.')
 	{
-		if (is_null($array)) {
+		if (\is_null($array))
 			$array = [];
-		}
-
-		if (is_null($exceptKeys)) {
+		if (\is_null($exceptKeys))
 			$exceptKeys = [];
-		}
-
 		$result = array();
 		foreach ($array as $path => $value) {
 			$temp = &$result;
-			foreach (explode($separator, (string) $path) as $key) {
-				if (!in_array($key, $exceptKeys)) {
+			foreach (explode($separator, $path) as $key) {
+				if (!\in_array($key, $exceptKeys))
 					$temp = &$temp[$key];
-				}
 			}
-
 			$temp = $value;
 		}
-
 		return $result;
 	}
 }
@@ -742,55 +700,31 @@ if (!function_exists('explode_str')) {
 	function explode_str(string $str, array|string $separator): array
 	{
 		$separator = toArray($separator);
-		if (m_empty($str)) {
+		if (m_empty($str))
 			return [];
-		}
-
-		if ($separator === []) {
+		if (\count($separator) == 0)
 			return [$str];
-		}
-
 		$newStr = str_replace($separator, $separator[0], $str);
 		$arr = explode($separator[0], $newStr);
-		return array_values(Arr::where($arr, fn($value): bool => !empty($value)));
+		$arr = array_values(Arr::where($arr, fn($value) => !empty($value)));
+		return $arr;
 	}
 }
 
-if (!function_exists('isNullOrEmpty')) {
-	function isNullOrEmpty($value): bool
-	{
-		return m_empty($value);
-	}
-}
 
-if (!function_exists('isEmptyOrZero')) {
-	function isEmptyOrZero($value): bool
-	{
-		return m_empty($value) || is_int($value) && intval($value) === 0;
-	}
-}
 
 if (!function_exists('clone_array')) {
 	function clone_array(array $arr)
 	{
-		if (m_empty($arr)) {
+		if (m_empty($arr))
 			return [];
-		}
-
-		
-		return collect($arr)->mapWithKeys(function ($v, $k) {
-			if (is_array($v)) {
-				return [
-					$k => clone_array($v),
-				];
+		return  collect($arr)->mapWithKeys(function ($v, $k) {
+			if (\is_array($v)) {
+				return [$k => clone_array($v)];
 			} elseif (is_object($v)) {
-				return [
-					$k => clone $v,
-				];
+				return [$k => clone $v];
 			} else {
-				return [
-					$k => $v,
-				];
+				return [$k => $v];
 			}
 		})->toArray();
 	}
@@ -800,13 +734,11 @@ if (!function_exists('merge_array')) {
 	function merge_array(array &$src_array, ...$arrays): array
 	{
 		foreach ($arrays as $arr) {
-			if (is_array($arr)) {
-				$src_array = merge_array($src_array, ...$arr);
-			} else {
+			if (\is_array($arr)) {
+				$src_array =	merge_array($src_array, ...$arr);
+			} else
 				$src_array[] = $arr;
-			}
 		}
-
 		return $src_array;
 	}
 }
@@ -830,31 +762,31 @@ if (!function_exists('merge_assoc_array')) {
 		foreach ($defArray as $key => $value) {
 			try {
 				$new_val = $newArray[$key] ?? null;
-				if (!m_empty($new_val) && (is_array($new_val) || is_array($value) && isAssoc($value))) {
-					$new_val = arr()->wrap($new_val);
-					$value = arr()->wrap($value);
+				if (!m_empty($new_val) && (\is_array($new_val) || (\is_array($value) && isAssoc($value)))) {
+					$new_val = Arr::wrap($new_val);
+					$value =  Arr::wrap($value);
 					//dd($key, $value, $new_val);
 					$newArray[$key] = merge_assoc_array($value, $new_val);
-				} elseif (!array_key_exists($key, $newArray)) {
-					$newArray[$key] = $value;
-				} elseif (!$escape) {
-					if (is_null($new_val)) {
+				} else {
+					if (!key_exists($key, $newArray)) {
 						$newArray[$key] = $value;
-					} elseif (is_array($new_val)) {
-						if (is_array($value)) {
-							$newArray[$key] = merge_array($new_val, $value);
-						} else {
-							$newArray[$key][] = $value;
+					} elseif (!$escape) {
+						if (\is_null($new_val))
+							$newArray[$key] = $value;
+						elseif (\is_array($new_val)) {
+							if (\is_array($value)) {
+								$newArray[$key] = merge_array($new_val, $value);
+							} else
+								$newArray[$key][] = $value;
+						} elseif (\is_string($new_val) && $new_val !== $value) {
+							$newArray[$key] .= ' ' . $value;
 						}
-					} elseif (is_string($new_val) && $new_val !== $value) {
-						$newArray[$key] .= ' ' . $value;
 					}
 				}
-			} catch (Exception $th) {
-			
+			} catch (\Exception $th) {
+				report($th);
 			}
 		}
-
 		return $newArray;
 	}
 }
@@ -864,23 +796,25 @@ if (!function_exists('extend_muldim_array')) {
 	{
 		$defArray = get_arrayable_items($defArray);
 		$defArray = isArrayNullOrZero($defArray) ? [] : $defArray;
-
 		$arry = get_arrayable_items($newArray);
 		$arry = isArrayNullOrZero($arry) ? [] : $arry;
 		foreach ($defArray as $key => $value) {
 			try {
-				if (is_string($key)) {
-					if (!array_key_exists($key, $arry)) {
-						$arry[$key] = is_array($value) ? [] : $value;
+				if (\is_string($key)) {
+					if (!key_exists($key, $arry)) {
+						if (\is_array($value)) {
+							$arry[$key] = [];
+						} else {
+							$arry[$key] = $value;
+						}
 					}
-				} elseif (!in_array($value, $arry)) {
+				} elseif (!\in_array($value, $arry)) {
 					$arry[] = $value;
 				}
-			} catch (Exception $th) {
-				
+			} catch (\Exception $th) {
+				report($th);
 			}
 		}
-
 		return $arry;
 	}
 }
@@ -906,5 +840,151 @@ if (!function_exists('get_arrayable_items')) {
 			$items instanceof UnitEnum => [$items],
 			default => (array) $items,
 		};
+	}
+}
+if (!function_exists('getValueByKey')) {
+	function getValueByKey(array $array, string $key, $default = null)
+	{
+		$keys = explode('.', $key);
+		$value = $array;
+		foreach ($keys as $k) {
+			// فك JSON مرة واحدة فقط إذا كانت string
+			if (is_string($value) && isJsonValue($value)) {
+				$decoded = json_decode($value, true);
+				if (json_last_error() === JSON_ERROR_NONE) {
+					$value = $decoded;
+				}
+			}
+
+			// الوصول إلى المصفوفة أو JSON بعد فكها
+			if (is_array($value)) {
+				if (array_key_exists($k, $value)) {
+					$value = $value[$k];
+				} elseif (is_numeric($k) && array_key_exists((int) $k, $value)) {
+					$value = $value[(int) $k];
+				} else {
+					return value($default);
+				}
+			} else {
+				return value($default);
+			}
+		}
+
+		return autoCast($value, $default);
+	}
+}
+if (!function_exists('jsonToArray')) {
+	function jsonToArray($string, $default = [])
+	{
+		if (m_empty($string)) {
+			return value($default);
+		}
+
+		if (is_array($string)) {
+			return $string;
+		}
+
+		if (!is_string($string)) {
+			return value($default);
+		}
+
+		$trimmed = trim($string);
+		if (isJsonValue($trimmed)) {
+			$decoded = json_decode($trimmed, true);
+			if (json_last_error() === JSON_ERROR_NONE) {
+				return $decoded;
+			}
+		}
+
+		return value($default);
+	}
+}
+if (!function_exists('toArrayIds')) {
+
+	/**
+	 * convert value to  array
+	 * @param mixed $value
+	 * @param (callable(): array)|null $notArraycallback
+	 * @return array
+	 */
+	function toArrayIds($value, ?callable $notArraycallback = null): array
+	{
+		$value = toArray($value, $notArraycallback);
+		if (empty($value)) {
+			return [];
+		}
+		return	ArrayHelper::filter($value, function ($id): bool {
+			if (m_empty($id)) {
+				return false;
+			}
+
+			if (is_numeric($id)) {
+				return parseInt($id) !== 0;
+			}
+
+			return true;
+		});
+	}
+}
+
+if (!function_exists('toArray')) {
+	/**
+	 * convert value to  array
+	 * @param mixed $value
+	 * @param (callable(): array)|null $notArraycallback
+	 * @return array
+	 */
+	function toArray($value, ?callable $notArraycallback = null): array
+	{
+		try {
+			if (m_empty($value)) {
+				return [];
+			}
+			if (is_array($value)) {
+				if (array_empty($value)) {
+					return [];
+				}
+				return $value;
+			}
+			if (is_numeric($value)) {
+				return [$value];
+			}
+			if (is_string($value)) {
+				if (Str::isJson($value)) {
+					return json_decode((string) $value, true);
+				}
+				if (Str::contains(trim($value), ","))
+					return explode(',', trim($value));
+			}
+			if ($notArraycallback != null && is_callable($notArraycallback)) {
+				return $notArraycallback();
+			}
+		} catch (\Throwable $th) {
+
+			//throw $th;
+		}
+		return [$value];
+	}
+}
+if (!function_exists('isArray')) {
+	/**
+	 * check if value is array
+	 * @param mixed $value
+	 * @return bool
+	 */
+	function isArray(mixed $value): bool
+	{
+		if (m_empty($value)) {
+			return false;
+		}
+		if (is_array($value)) {
+			return true;
+		}
+		if (is_string($value)) {
+			if (Str::isJson($value)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

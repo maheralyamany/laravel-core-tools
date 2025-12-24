@@ -184,7 +184,7 @@ class ArrayHelper
 	 */
 	public static function mergeMultiple($strategy = 'overwrite', ...$arrays)
 	{
-		if ($arrays === []) {
+		if (empty($arrays)) {
 			return [];
 		}
 
@@ -418,7 +418,7 @@ class ArrayHelper
 		}
 
 		// Add the remaining items
-		if ($temp !== []) {
+		if (!empty($temp)) {
 			$result[] = $temp;
 		}
 
@@ -427,7 +427,7 @@ class ArrayHelper
 
 	public static function getColumns(array $array1)
 	{
-		if ($array1 === []) {
+		if (empty($array1)) {
 			return [];
 		}
 
@@ -437,9 +437,9 @@ class ArrayHelper
 
 	public static function arrayUnGroupRecursive(array $groupData, array $groups, array &$allData, array $curRow = []): void
 	{
-		if ($groups !== []) {
+		if (!empty($groups)) {
 			$key = Arr::pull($groups, 0);
-			if ($groups !== []) {
+			if (!empty($groups)) {
 				$groups = array_values($groups);
 			}
 
@@ -455,7 +455,7 @@ class ArrayHelper
 				dd($key, $groupData, $groups, $allData, $curRow);
 				//throw $th;
 			}
-		} elseif ($groupData !== []) {
+		} elseif (!empty($groupData)) {
 			/* 	if (!isset($groupData[0]))
             				dd($groupData, $groups, $curRow); */
 			foreach ($groupData as $row) {
@@ -480,9 +480,9 @@ class ArrayHelper
 
 	public static function arrayDeepReplaceRecursive(array $array1, array $array2): array
 	{
-		if ($array1 === []) {
+		if (empty($array1) ) {
 			return $array2;
-		} elseif ($array2 === []) {
+		} elseif (empty($array2)) {
 			return $array1;
 		}
 
@@ -588,7 +588,7 @@ class ArrayHelper
 
 	public static function prependAssoc(array &$array, array $insert_array)
 	{
-		if ($insert_array !== []) {
+		if (!empty($insert_array)) {
 			$array = $insert_array + $array;
 		}
 
@@ -779,7 +779,7 @@ class ArrayHelper
 					$difference[$key] = $value;
 				} else {
 					$multidimensionalDiff = static::arrayDiffAssocMultidimensional($value, $array2[$key], $withCompareValue);
-					if ($multidimensionalDiff !== []) {
+					if (!empty($multidimensionalDiff)) {
 						$difference[$key] = $multidimensionalDiff;
 					}
 				}
@@ -817,7 +817,7 @@ class ArrayHelper
 					$addDifference($key, $value);
 				} else {
 					$multidimensionalDiff = static::arrayDiffAssocKeys($value, $otherArr, $arrKey);
-					if ($multidimensionalDiff !== []) {
+					if (!empty($multidimensionalDiff)) {
 						$addDifference($key, $multidimensionalDiff);
 					}
 				}

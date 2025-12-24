@@ -17,9 +17,12 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Finder\SplFileInfo;
 use Illuminate\Support\Facades\URL;
+use Maher\CoreTools\Core\Descriptor\DescriptorType;
+use Maher\CoreTools\Core\Descriptor\ReflectionDescriptor;
+
 trait PathsHelperTrait
 {
-    public static function extractFromDirectory(string|array $directory, string|array $patterns = '*.php'): iterable|Finder
+	public static function extractFromDirectory(string|array $directory, string|array $patterns = '*.php'): iterable|Finder
 	{
 		if (!class_exists(Finder::class)) {
 			throw new LogicException(\sprintf('You cannot use "%s" as the "symfony/finder" package is not installed. Try running "composer require symfony/finder".', static::class));
@@ -66,46 +69,6 @@ trait PathsHelperTrait
 			depthLimit: $depthLimit
 		);
 
-		/*
-		$modelsPath = FileHelper::getFullPath($modelsPath);
-		if (!is_dir($modelsPath)) {
-			return [];
-		}
-		$hasFilterModels = count($execludModels) > 0;
-		return static::getAllSubFilesAdvanced(
-			$modelsPath,
-			select: function ($file, $index) use ($hasFilterModels, $execludModels) {
-				if ($hasFilterModels) {
-					$fileName = $file->getFilenameWithoutExtension();
-					if (!in_array($fileName, $execludModels)) {
-						return null;
-					}
-				}
-				$content = $file->getContents();
-				if (preg_match('/namespace\s+([^;]+);/', $content, $nsMatch) &&  preg_match('/class\s+([^\s{]+)/', $content, $classMatch)) {
-					$nameSpace = trim($nsMatch[1]);
-					$shortName = trim($classMatch[1]);
-					$className = $nameSpace . "\\" . $shortName;
-					if (!is_subclass_of($className, \Illuminate\Database\Eloquent\Model::class)) {
-						return null;
-					}
-					$model = new $className();
-					$table = $model->getTable();
-					$row = [
-						'nameSpace' => $nameSpace,
-						'shortName' => $shortName,
-						'className' => $className,
-						'table' => $table,
-						'path' => $file->getRealPath(),
-					];
-					return	[$index => $row];
-				}
-				return null;
-			},
-			extension: 'php',
-			ignore: $ignore,
-			depthLimit: $depthLimit
-		); */
 	}
 	public static function removeCommentsFromContent(string $content, bool $withQuoted = false)
 	{
@@ -645,15 +608,22 @@ trait PathsHelperTrait
 		// dd($base_path, $base_url, $url, $path);
 		return str_replace(["\\"], "/", $url);
 	}
-
+	protected static $basePath;
+	protected static $baseUrl;
 	public static function getBasePath($base_path = null): string
 	{
-		$base_path = $base_path ? static::normalizePathOrUrl($base_path) : \MxHtml::getBasePath();
+		if (is_null(static::$basePath)) {
+			static::$basePath = static::normalizePathOrUrl(base_path());
+		}
+		$base_path = $base_path ? static::normalizePathOrUrl($base_path) : static::$basePath;
 		return $base_path;
 	}
 	public static function getBaseUrl($base_url = null): string
 	{
-		$base_url = $base_url ? static::normalizePathOrUrl($base_url) : \MxHtml::getBaseUrl();
+		if (is_null(static::$basePath)) {
+			static::$baseUrl = static::normalizePathOrUrl(url('/'));
+		}
+		$base_url = $base_url ? static::normalizePathOrUrl($base_url) : static::$baseUrl;
 		return $base_url;
 	}
 	public static function parsePathToValidUrl(string $path, $base_url = null, $base_path = null): string

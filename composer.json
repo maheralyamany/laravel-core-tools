@@ -1,6 +1,7 @@
 {
   "name": "maheralyamany/laravel-core-tools",
   "description": "Core helpers and request security tools for Laravel",
+   "homepage": "https://github.com/maheralyamany/laravel-core-tools",
   "type": "library",
   "license": "MIT",
   "authors": [

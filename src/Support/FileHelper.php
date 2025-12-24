@@ -39,7 +39,7 @@ class FileHelper
 		try {
 			// Delete old files if any
 			if (!m_empty($paths)) {
-				$disk = $disk ?: getStorageDefaultDisk();
+				$disk = $disk ?: 'local';
 				foreach ((array) $paths as $path) {
 					$path = FileHelper::addDirectoryToPath($path, $directory);
 
@@ -238,11 +238,11 @@ class FileHelper
 	{
 		try {
 			$path = str_replace("\\", "/", $path);
-			$base_url = \MxHtml::getBaseUrl();
+			$base_url = static::getBaseUrl();
 			$path = trim(str_replace($base_url, "", $path));
 			$storagePath = "storage/app";
 			$path = static::getValidPath($path);
-			$base = \MxHtml::getBasePath();
+			$base = static::getBasePath();
 			//dd($path,\str_starts_with($path, $storagePath), \str_starts_with($path, $base));
 			if (!\str_starts_with($path, $storagePath) && !\str_starts_with($path, $base)) {
 				$path = $storagePath . "/" . $path;

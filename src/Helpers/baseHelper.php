@@ -1,57 +1,16 @@
 <?php
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-if (!function_exists('m_empty')) {
-	function m_empty(mixed $value): bool
-	{
-		return !isset($value) || $value === null || empty($value);
+if (!function_exists('taggedCache')) {
+	function taggedCache(): Illuminate\Cache\Repository/* | \Illuminate\Contracts\Cache\Repository|\App\Cache\Store\TaggedCustomCacheStore */
+	{ //CUSTOM_CASHE_KEY
+		return \Illuminate\Support\Facades\Cache::store(\Maher\CoreTools\Support\CoreToolsConstants::TAGED_CACHE_KEY);
 	}
 }
 
-if (!function_exists('m_not_empty')) {
-	function m_not_empty($value): bool
-	{
-		return !m_empty($value);
-	}
-}
-if (!function_exists('nullOrEmpty')) {
-	function nullOrEmpty($value): bool
-	{
-		return m_empty($value);
-	}
-}
-if (!function_exists('getValidTitle')) {
-	function getValidTitle($title): string|null
-	{
-		if (m_empty($title))
-			return $title;
-		$title = Str::singular(Str::studly($title));
-		//$title = str_replace('_', ' ', $title);
-		return $title;
-	}
-}
-if (!function_exists('getPaymentValidTitle')) {
-	function getPaymentValidTitle($gateway): string|null
-	{
-		if (m_empty($gateway))
-			return '';
-		$additional_data = $gateway['additional_data'] != null ? json_decode($gateway['additional_data']) : [];
-		if ($additional_data != null) {
-			if (m_empty($additional_data->gateway_title))
-				return getValidTitle($gateway->key_name);
-			return $additional_data->gateway_title;
-		}
-		return '';
-	}
-}
 
-if (!function_exists('emptyOrZero')) {
-	function emptyOrZero($value): bool
-	{
-		return m_empty($value) || is_int($value) && intval($value) === 0;
-	}
-}
 
 if (!function_exists('parseBoolean')) {
 	/**
@@ -70,37 +29,7 @@ if (!function_exists('parseBoolean')) {
 	}
 }
 
-if (!function_exists('getValueByKey')) {
-	function getValueByKey(array $array, string $key, $default = null)
-	{
-		$keys = explode('.', $key);
-		$value = $array;
-		foreach ($keys as $k) {
-			// فك JSON مرة واحدة فقط إذا كانت string
-			if (is_string($value) && isJsonValue($value)) {
-				$decoded = json_decode($value, true);
-				if (json_last_error() === JSON_ERROR_NONE) {
-					$value = $decoded;
-				}
-			}
 
-			// الوصول إلى المصفوفة أو JSON بعد فكها
-			if (is_array($value)) {
-				if (array_key_exists($k, $value)) {
-					$value = $value[$k];
-				} elseif (is_numeric($k) && array_key_exists((int) $k, $value)) {
-					$value = $value[(int) $k];
-				} else {
-					return value($default);
-				}
-			} else {
-				return value($default);
-			}
-		}
-
-		return autoCast($value, $default);
-	}
-}
 
 if (!function_exists('autoCast')) {
 	function autoCast($value, $default = null)
@@ -165,32 +94,7 @@ if (!function_exists('isJsonValue')) {
 	}
 }
 
-if (!function_exists('jsonToArray')) {
-	function jsonToArray($string, $default = [])
-	{
-		if (m_empty($string)) {
-			return value($default);
-		}
 
-		if (is_array($string)) {
-			return $string;
-		}
-
-		if (!is_string($string)) {
-			return value($default);
-		}
-
-		$trimmed = trim($string);
-		if (isJsonValue($trimmed)) {
-			$decoded = json_decode($trimmed, true);
-			if (json_last_error() === JSON_ERROR_NONE) {
-				return $decoded;
-			}
-		}
-
-		return value($default);
-	}
-}
 
 if (!function_exists('parseInt')) {
 	/**
@@ -207,7 +111,7 @@ if (!function_exists('parseInt')) {
 			} elseif (is_int($value)) {
 				return $value;
 			} elseif (is_array($value)) {
-				$value = $value !== [] ? intval(toArrayIds($value)[0] ?? 0) : 0;
+				$value = !empty($value)  ? intval(toArrayIds($value)[0] ?? 0) : 0;
 			} else {
 				$value = intval($value);
 			}
@@ -254,91 +158,7 @@ if (!function_exists('parseFloat')) {
 	}
 }
 
-if (!function_exists('toArrayIds')) {
 
-	/**
-	 * convert value to  array
-	 * @param mixed $value
-	 * @param (callable(): array)|null $notArraycallback
-	 * @return array
-	 */
-	function toArrayIds($value, ?callable $notArraycallback = null): array
-	{
-		$value = toArray($value, $notArraycallback);
-		if ($value === []) {
-			return [];
-		}
-
-		return collect($value)->filter(function ($id): bool {
-			if (m_empty($id)) {
-				return false;
-			}
-
-			if (is_numeric($id)) {
-				return parseInt($id) !== 0;
-			}
-
-			return true;
-		})->toArray();
-	}
-}
-
-if (!function_exists('toArray')) {
-	/**
-	 * convert value to  array
-	 * @param mixed $value
-	 * @param (callable(): array)|null $notArraycallback
-	 * @return array
-	 */
-	function toArray($value, ?callable $notArraycallback = null): array
-	{
-		try {
-			if (m_empty($value)) {
-				return [];
-			}
-			if (is_array($value)) {
-				if (array_empty($value)) {
-					return [];
-				}
-				return $value;
-			}
-			if (is_numeric($value)) {
-				return [$value];
-			}
-			if (is_string($value)) {
-				if (Str::isJson($value)) {
-					return json_decode((string) $value, true);
-				}
-				if (Str::contains(trim($value), ","))
-					return explode(',', trim($value));
-			}
-			if ($notArraycallback != null && is_callable($notArraycallback)) {
-				return $notArraycallback();
-			}
-		} catch (\Throwable $th) {
-		
-			//throw $th;
-		}
-		return [$value];
-	}
-}
-if (!function_exists('isArray')) {
-	function isArray($value): bool
-	{
-		if (m_empty($value)) {
-			return false;
-		}
-		if (is_array($value)) {
-			return true;
-		}
-		if (is_string($value)) {
-			if (Str::isJson($value)) {
-				return true;
-			}
-		}
-		return false;
-	}
-}
 
 if (!function_exists('hex_to_rgb')) {
 	function hex_to_rgb($hex)
@@ -430,37 +250,150 @@ if (!function_exists('decimal_format')) {
 		}
 	}
 }
-if (!function_exists('toStringIds')) {
-	function toStringIds($ids, $int_val = true)
+
+if (!function_exists('auto_decimal_format')) {
+	function auto_decimal_format($number, $max_decimals = 4)
 	{
-		$array = ($int_val) ? toArrayIds($ids) : toStringArrayIds($ids);
-		return	implode(',', $array);
+		try {
+			//$broken_number = explode('.', $number);
+			$number = floatval($number);
+			if (str_contains(strval($number), '.')) {
+				$decimal_count = getDecimalPlaces($number);
+				if ($decimal_count > $max_decimals) {
+					$decimal_count = $max_decimals;
+				}
+				return number_format($number, $decimal_count);
+			}
+			return number_format($number);
+		} catch (\Throwable $th) {
+			report($th);
+
+			return $number;
+		}
 	}
 }
-if (!function_exists('toStringArrayIds')) {
-	function toStringArrayIds($ids, $withZero = false)
+if (!function_exists('formatValue')) {
+	function formatValue($value, $type)
 	{
-		if (m_empty($ids))
-			return  [];
-		if (is_array($ids)) {
-			if (count($ids) == 0)
-				return  [];
-			return collect($ids)->map(fn($id) => strval($id))->toArray();
+		if (m_empty($value) || \in_array($type, ["integer", "int", "string", "boolean"]))
+			return $value;
+		try {
+			switch ($type) {
+				case "numeric":
+				case "double":
+				case "float":
+					return auto_decimal_format($value);
+				case "integer":
+				case "int":
+					return $value;
+				case "string":
+					return $value;
+				case "boolean":
+					return $value;
+				case "datetime":
+					return format_date($value);
+					// no break
+				case "date":
+					return format_date($value);
+				case "time":
+					return format_time($value);
+			}
+		} catch (\Throwable $th) {
+			report($th);
 		}
-		$id = parseInt($ids);
-		return ($id > 0 || $withZero) ? [strval($id)] : [];
+		return $value;
+	}
+}
+if (!function_exists('gettype_fromstring')) {
+	function gettype_fromstring($string, $def_type = 'string')
+	{
+		if (m_empty($string))
+			return $def_type;
+		if (is_bool($string))
+			return 'boolean';
+		if (is_int($string))
+			return 'integer';
+		if (is_numeric($string))
+			return 'numeric';
+		if (\is_array($string))
+			return 'array';
+		if (is_object($string))
+			return 'object';
+		if (validateDate($string))
+			return 'datetime';
+		//  (c) José Moreira - Microdual (www.microdual.com)
+		return gettype(getcorrectvariable($string));
+	}
+}
+if (!function_exists('getcorrectvariable')) {
+	function getcorrectvariable($string)
+	{
+		if (gettype($string) === 'array') {
+			return (array)$string;
+		}
+		$string = trim($string);
+		if ($string === '0') { // we must check this before empty because zero is empty
+			return 0;
+		}
+		if (empty($string)) {
+			return '';
+		}
+		if ($string === 'null') {
+			return null;
+		}
+		if ($string === 'undefined') {
+			return null;
+		}
+		if ($string === '1') {
+			return 1;
+		}
+		if (!preg_match('/[^0-9.]+/', $string)) {
+			if (preg_match('/[.]+/', $string)) {
+				return (float)$string;
+			} else {
+				return (int)$string;
+			}
+		}
+		if ($string == 'true') {
+			return true;
+		}
+		if ($string == 'false') {
+			return false;
+		}
+		return (string)$string;
+	}
+}
+if (!function_exists('isNullOrEmpty')) {
+	function isNullOrEmpty($value): bool
+	{
+		return m_empty($value);
 	}
 }
 
-if (!function_exists('strBase64DecodeAll')) {
-	function strBase64DecodeAll(...$strings)
+if (!function_exists('isEmptyOrZero')) {
+	function isEmptyOrZero($value): bool
 	{
-		$results = [];
-		foreach ($strings as $string) {
-			$results[$string] = base64_decode($string);
-		}
-		
-		return $results;
+		return m_empty($value) || is_int($value) && intval($value) === 0;
 	}
 }
 
+
+if (! function_exists('normalizeBackslashes')) {
+	function normalizeBackslashes($value)
+	{
+		if (\is_string($value)) {
+			// أولاً: استبدال 3 backslashes أو أكثر بواحدة
+			$string = preg_replace('/\\\{3,}/', '\\', $value);
+			// ثانياً: التأكد من عدم وجود double backslashes غير مرغوب فيها
+			$string = str_replace('\\\\', '\\', $string);
+			return $string;
+		}
+		if (\is_array($value)) {
+			return Arr::mapWithKeys($value, fn($v, $k) => [$k => normalizeBackslashes($v)]);
+			
+		}
+		if (is_object($value))
+			return  normalizeBackslashes(get_class($value));
+		return $value;
+	}
+}

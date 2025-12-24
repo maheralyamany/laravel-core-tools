@@ -90,7 +90,8 @@ class TranslationManager
 
 	private static function getValidLocale($locale)
 	{
-		$locale = $locale ?? getAppLocale();
+		
+		$locale = $locale ?? app()->getLocale();
 		return $locale;
 	}
 
@@ -485,7 +486,7 @@ class TranslationManager
 					}
 				}
 
-				if ($newarray !== []) {
+				if (!empty($newarray)) {
 					self::saveToFile($newarray, $file, [
 						'ignore_numeric_keys' => false,
 						'max_depth' => 50,
@@ -495,8 +496,8 @@ class TranslationManager
 				/*    if (count($arabicArray) > 0) {
                           dd($file, $arabicArray);
                       } */
-				if ($arabicArray !== [] || $numricarray !== []) {
-					if ($arabicArray !== []) {
+				if (!empty($arabicArray) || !empty($numricarray)) {
+					if (!empty($arabicArray)) {
 						$filename = FileHelper::getFilenameWithoutExtension($file);
 						$directory = FileHelper::getFileDirectory($file);
 						$removed = [
@@ -523,7 +524,7 @@ class TranslationManager
 	 */
 	public static function scanAndUpdateMissingTranslations($locale = null)
 	{
-		$locale = $locale ?? getAppLocale();
+		$locale = self::getValidLocale($locale);
 		$results = [
 			'added' => [],
 			'existing' => [],
@@ -584,10 +585,11 @@ class TranslationManager
 	 */
 	public static function generateMissingTranslationsReport($locale = null)
 	{
+		$locale=self::getValidLocale($locale);
 		$scanResults = self::scanAndUpdateMissingTranslations($locale);
 		$report = [];
 		$report[] = "=== Missing Translations Report ===";
-		$report[] = "Language: " . ($locale ?? getAppLocale());
+		$report[] = "Language: " . $locale;
 		$report[] = "Keys Added: " . count($scanResults['added']);
 		$report[] = "Existing Keys: " . count($scanResults['existing']);
 		$report[] = "Errors: " . count($scanResults['errors']);

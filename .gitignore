@@ -28,7 +28,7 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
-
+artisan
 
 .idea
 
