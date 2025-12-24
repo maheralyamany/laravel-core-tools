@@ -30,7 +30,7 @@ class CoreToolsServiceProvider extends ServiceProvider
             ], 'core-tools-config');
             $this->publishes([
                 __DIR__ . '/../resources/views' => base_path('resources/views/vendor/core-tools'),
-            ], 'views');
+            ], 'core-tools-views');
             $this->registerMigrations();
             $this->publishes([
                 __DIR__ . '/../database/migrations' => database_path('migrations'),
