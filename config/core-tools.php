@@ -1,5 +1,7 @@
 <?php
+
 use Maher\CoreTools\Security\Models\CoreBlockIp;
+
 return [
     'modules' => [
         'ip_guard' => true,
@@ -16,15 +18,16 @@ return [
         ],
     ],
     'security' => [
+        'enabled' => true,
         'channel' => [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
             'level' => 'warning',
         ],
         'blocked_ips' => [
-            'table_name'=>'core_block_ips',
-            'connection'=>null,
-            'model'=>CoreBlockIp::class,
+            'table_name' => 'core_block_ips',
+            'connection' => null,
+            'model' => CoreBlockIp::class,
         ],
         'rate_limit' => [
             'enabled' => true,

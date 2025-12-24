@@ -7,6 +7,7 @@ namespace Maher\CoreTools\Security\Request;
 use Maher\CoreTools\Core\Dynamic\DyDataStoreTrait;
 use Illuminate\Foundation\Auth\User;
 use Maher\CoreTools\Security\Helpers\SystemInfoHelper;
+use Illuminate\Http\Request;
 
 class RequestManager
 {
@@ -21,7 +22,7 @@ class RequestManager
   {
     $this->request = $request;
   }
-  public  function getRequest()
+  public  function getRequest(): Request
   {
     if (\is_null($this->request)) {
       $this->request = request();
