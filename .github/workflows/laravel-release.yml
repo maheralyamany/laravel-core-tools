@@ -1,0 +1,37 @@
+name: Laravel Release Only (PAT)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "v*-beta*"
+      - "v*-alpha*"
+      - "v*-rc*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Determine Pre-release
+        id: prerelease
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == *"-alpha"* ]] || [[ "${GITHUB_REF_NAME}" == *"-beta"* ]] || [[ "${GITHUB_REF_NAME}" == *"-rc"* ]]; then
+            echo "prerelease=true" >> $GITHUB_ENV
+          else
+            echo "prerelease=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create Release using PAT
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ env.prerelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
