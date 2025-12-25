@@ -445,8 +445,7 @@ trait PathsHelperTrait
 		foreach ($sdirectories as $dir) {
 			// $directories[] = $dir;
 			$directories = static::getAllSubDirectories($dir, $directories);
-			/*  if (count($ssdirectories) > 0)
-                $directories = arr()->merge($directories, $ssdirectories); */
+		
 		}
 
 		return $directories;

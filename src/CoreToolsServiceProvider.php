@@ -31,10 +31,10 @@ class CoreToolsServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../resources/views' => base_path('resources/views/vendor/core-tools'),
             ], 'core-tools-views');
-            $this->registerMigrations();
             $this->publishes([
                 __DIR__ . '/../database/migrations' => database_path('migrations'),
             ], 'core-tools-migrations');
+            $this->registerMigrations();
             //resources\views\errors\security.blade.php
         }
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'core-tools');

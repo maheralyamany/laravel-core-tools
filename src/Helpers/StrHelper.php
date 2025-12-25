@@ -1,7 +1,42 @@
 <?php
 
 use Illuminate\Support\Str;
-
+if (!function_exists('sprintfx')) {
+	/**
+* Extended sprintf helper.
+*
+* @param mixed ...$values
+* @return string
+*/
+	function sprintfx(mixed ...$values): string
+	{
+		$format = "";
+		foreach ($values as $value) {
+			if (is_array($value)) {
+				$format .= sprintfx($value);
+			} else {
+				$format .= $value;
+			}
+		}
+		return $format;
+	}
+}
+if (!function_exists('strx')) {
+	/**
+	 * Get a new Str object from the given string.
+	 *
+	 */
+	function strx(): \Illuminate\Support\Str
+	{
+		return new class extends Illuminate\Support\Str
+		{
+			/* public function __call($method, $parameters)
+            			{
+            				return Arr::$method(...$parameters);
+            			} */
+		};
+	}
+}
 if (!function_exists('safe_slug')) {
   function safe_slug(string $v): string
   {

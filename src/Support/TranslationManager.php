@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Maher\CoreTools\Support;
 
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class TranslationManager
@@ -200,14 +202,14 @@ class TranslationManager
 	{
 		$newkey = is_string($key) ? mb_strtolower($key, 'UTF-8') : (string) $key;
 		$newkey = trim($newkey);
-		$newkey = strx()->replaceEnd('.', '', $newkey);
+		$newkey = Str::replaceEnd('.', '', $newkey);
 		return $newkey;
 	}
 
 	private static function encodeValueForCompare(string $value): string
 	{
 		$str = self::encodeValueForTranslation($value);
-		$str = strx()->lower(\str_replace(" ", "", \trim($str)));
+		$str = Str::lower(\str_replace(" ", "", \trim($str)));
 		return $str;
 	}
 
@@ -244,7 +246,7 @@ class TranslationManager
 				} elseif (\is_string($value) && \is_string($oldValue)) {
 					$isDiff = trim($oldValue) !== trim($value);
 				} elseif (\is_array($value) && \is_array($oldValue)) {
-					$diff = arr()->arrayDiffAssoc($value, $oldValue, 'key');
+					$diff = Arr::arrayDiffAssoc($value, $oldValue, 'key');
 					$isDiff = count($diff) > 0;
 				}
 
@@ -273,7 +275,7 @@ class TranslationManager
 		foreach ($files as $file) {
 			$file = FileHelper::getFullPathFromRelative($file, $base);
 			$array = File::getRequire($file);
-			$mergearray = count($mergearray) > 0 ? arr()->mergeRecursive($mergearray, $array, 'keep_first') : $array;
+			$mergearray = count($mergearray) > 0 ? Arr::mergeRecursive($mergearray, $array, 'keep_first') : $array;
 		}
 
 		ksort($mergearray, SORT_REGULAR);
@@ -286,15 +288,15 @@ class TranslationManager
 		$mergearray = [];
 		foreach ($files as $file) {
 			$array = File::getRequire($file->getPathname());
-			$mergearray = count($mergearray) > 0 ? arr()->mergeRecursive($mergearray, $array) : $array;
+			$mergearray = count($mergearray) > 0 ? Arr::mergeRecursive($mergearray, $array) : $array;
 		}
 		$filePath = $directory . "/merged.php";
 		self::saveToFile($mergearray, $filePath);
 	}
 	public static function copyMessagesFromLanguage(string $from, string $to, string $fromFile = "messages", $toFile = "new-messages", bool $overwrite = false, bool $checkEmpty = true): array
 	{
-		$toFile = strx()->lower($toFile);
-		$fromFile = strx()->lower($fromFile);
+		$toFile = Str::lower($toFile);
+		$fromFile = Str::lower($fromFile);
 		$toLangPath = lang_path("/{$to}/{$toFile}.php");
 		$toMessages = FileHelper::getRequire($toLangPath);
 		if (count($toMessages) > 0 && !$overwrite)
@@ -307,7 +309,7 @@ class TranslationManager
 		$fromMessages = FileHelper::getRequire($fromLangPath);
 		if (count($fromMessages) == 0)
 			return $toMessages;
-		$mergearray = count($toMessages) > 0 ? arr()->mergeRecursive($toMessages, $fromMessages, 'keep_first') : $fromMessages;
+		$mergearray = count($toMessages) > 0 ? Arr::mergeRecursive($toMessages, $fromMessages, 'keep_first') : $fromMessages;
 		if (self::saveToFile($mergearray, $toLangPath))
 			return	$mergearray;
 		return $toMessages;
@@ -345,7 +347,7 @@ class TranslationManager
 		$filename = FileHelper::getFilenameWithoutExtension($filePath);
 		$extension = FileHelper::getFileExtension($filePath);
 		$targetDirectory = sprintf('%s/%s', $targetDirectory, $filename);
-		$newarray = arr()->filter($array, fn($v, $k) => !self::IsArabic($v) && !self::IsArabic($k));
+		$newarray = Arr::filter($array, fn($v, $k) => !self::IsArabic($v) && !self::IsArabic($k));
 		if (count($newarray) < count($array)) {
 			self::saveToFile($newarray, $filePath);
 			$array = $newarray;
@@ -371,14 +373,14 @@ class TranslationManager
 			$array = FileHelper::getRequire($file);
 			if (count($array) > 0) {
 				$newarray = self::updateLocaleArrayKeys($array);
-				$doublicate = collect($newarray)->filter(fn($v, $k) => strx()->endsWith($k, self::DOUBLICATED))->mapWithKeys(fn($v, $k) => [
-					strx()->replaceEnd(self::DOUBLICATED, '', $k) => $v,
+				$doublicate = collect($newarray)->filter(fn($v, $k) => Str::endsWith($k, self::DOUBLICATED))->mapWithKeys(fn($v, $k) => [
+					Str::replaceEnd(self::DOUBLICATED, '', $k) => $v,
 				])->toArray();
 				if (count($doublicate) > 0) {
-					$newarray = collect($newarray)->filter(fn($v, $k) => !strx()->endsWith($k, self::DOUBLICATED))->toArray();
+					$newarray = collect($newarray)->filter(fn($v, $k) => !Str::endsWith($k, self::DOUBLICATED))->toArray();
 				}
 
-				//$diff = arr()->arrayDiffAssoc($newarray, $array, 'key');
+				//$diff = Arr::arrayDiffAssoc($newarray, $array, 'key');
 				self::saveToFile($newarray, $file);
 				if (count($doublicate) > 0) {
 					$filename = FileHelper::getFilenameWithoutExtension($file);
@@ -394,8 +396,8 @@ class TranslationManager
 
 	public static function scanAndMergeLangsFiles(string|null $lang = null, $targetFile = "messages", $sourceFile = "new-messages", bool $deleteSource = false)
 	{
-		$targetFile = strx()->lower($targetFile);
-		$sourceFile = strx()->lower($sourceFile);
+		$targetFile = Str::lower($targetFile);
+		$sourceFile = Str::lower($sourceFile);
 		$directories = m_empty($lang) ? FileHelper::getDirectories(lang_path('/')) : [lang_path($lang)];
 		$updated = [];
 		//dd($directories);
@@ -406,8 +408,8 @@ class TranslationManager
 				$translatedMessagesArray = FileHelper::getRequire($targetPath);
 				$newMessagesArray = FileHelper::getRequire($sourcePath);
 				//mergeRecursive
-				$mergearray = count($translatedMessagesArray) > 0 ? arr()->mergeRecursive($translatedMessagesArray, $newMessagesArray, 'keep_first') : $newMessagesArray;
-				//$diff = arr()->arrayDiffAssoc($newMessagesArray, $translatedMessagesArray, 'key');
+				$mergearray = count($translatedMessagesArray) > 0 ? Arr::mergeRecursive($translatedMessagesArray, $newMessagesArray, 'keep_first') : $newMessagesArray;
+				//$diff = Arr::arrayDiffAssoc($newMessagesArray, $translatedMessagesArray, 'key');
 				$oldCount = count($newMessagesArray);
 				$diffCount = count($mergearray);
 				if ($diffCount !== $oldCount) {
@@ -441,7 +443,7 @@ class TranslationManager
 			if (File::exists($messagesPath) && File::exists($newMessagePath)) {
 				$translatedMessagesArray = File::getRequire($messagesPath);
 				$newMessagesArray = File::getRequire($newMessagePath);
-				$diff = arr()->arrayDiffAssoc($newMessagesArray, $translatedMessagesArray, 'key');
+				$diff = Arr::arrayDiffAssoc($newMessagesArray, $translatedMessagesArray, 'key');
 				$oldCount = count($newMessagesArray);
 				$diffCount = count($diff);
 				if ($diffCount !== $oldCount) {
