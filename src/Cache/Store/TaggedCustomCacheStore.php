@@ -69,7 +69,7 @@ class TaggedCustomCacheStore implements Store
         return $content['value'];
     }
 
-    public function put($key, $value, $minutes)
+    public function put($key, $value, $seconds = 0)
     {
         [$dir, $realKey] = $this->splitKey($key);
         $dirPath = $this->basePath . DIRECTORY_SEPARATOR . $dir;
@@ -77,7 +77,7 @@ class TaggedCustomCacheStore implements Store
 
         $this->cleanDirectory($dirPath); // تنظيف تلقائي قبل الحفظ
 
-        $expiresAt = $minutes > 0 ? Carbon::now()->addMinutes($minutes)->timestamp : 0;
+        $expiresAt = $seconds > 0 ? Carbon::now()->addSeconds($seconds)->timestamp : 0;
 
         File::put($this->path($dir, $realKey), serialize([
             'value' => $value,

@@ -551,13 +551,13 @@ class ArrayHelper
 	 */
 	public static function forgetKey($items, $keys)
 	{
-		$keys = arr()->wrap($keys);
+		$keys = Arr::wrap($keys);
 		if (count($keys) > 0) {
 			if (isAssoc($items)) {
-				arr()->forget($items, $keys);
+				Arr::forget($items, $keys);
 			} else {
 				$items = collect($items)->mapWithKeys(function ($row, $k) use ($keys) {
-					arr()->forget($row, $keys);
+					Arr::forget($row, $keys);
 					return [
 						$k => $row,
 					];

@@ -13,6 +13,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Maher\CoreTools\Support\Traits\PathsHelperTrait;
 
 class FileHelper
@@ -22,7 +23,7 @@ class FileHelper
 	{
 
 		if (!m_empty($directory)) {
-			$path = ((strx()->startsWith($path, $directory)) ? $path : ($directory . '/' . $path));
+			$path = ((Str::startsWith($path, $directory)) ? $path : ($directory . '/' . $path));
 		}
 		return $path;
 	}
@@ -30,7 +31,7 @@ class FileHelper
 	public static function removeDirectoryFromPath(string|null $path,  string|null $directory = null): string|null
 	{
 		if (!m_empty($directory) && !m_empty($path)) {
-			$path = strx()->replaceStart($directory, "", $path);
+			$path = Str::replaceStart($directory, "", $path);
 		}
 		return $path;
 	}
@@ -45,7 +46,7 @@ class FileHelper
 
 
 
-					//$oldFiles = arr()->mapWithKeys($oldImages, fn($v, $k) => [$k => ((strx()->startsWith($v, $dir)) ? $v :	$dir . $v)]);
+					//$oldFiles = Arr::mapWithKeys($oldImages, fn($v, $k) => [$k => ((Str::startsWith($v, $dir)) ? $v :	$dir . $v)]);
 					if (Storage::disk($disk)->exists($path)) {
 						Storage::disk($disk)->delete($path);
 					}
@@ -221,7 +222,7 @@ class FileHelper
 		try {
 
 			$path = self::getStoragePublicRelativePath($path);
-			if (!strx()->startsWith($path, 'public/'))
+			if (!Str::startsWith($path, 'public/'))
 				$path = 'public/' . $path;
 
 			return Storage::exists($path);

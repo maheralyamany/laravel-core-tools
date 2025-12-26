@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 trait CommandMessagesTrait
 {
 	protected $outputMessages = [];
+	protected bool $showCommandMessages = false;
 	/**
 	 * Summary of command
 	 * @var Command
@@ -22,9 +23,9 @@ trait CommandMessagesTrait
 		$this->outputMessages[] =  $style ? "<$style>$text</$style>" : $text;
 		if ($this->command instanceof Command) {
 			$this->command->line($text, $style, $verbosity);
-		}/*  else {
+		} elseif($this->showCommandMessages) {
 			echo $text . PHP_EOL . " <br>";
-		} */
+		}
 	}
 	protected function error(string $text): void
 	{
