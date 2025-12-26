@@ -34,6 +34,7 @@
       "src/Helpers/baseHelper.php",
       "src/Helpers/datetimeHelper.php",
       "src/Helpers/languageHelper.php",
+      "src/Helpers/internetHelper.php",
       "src/Helpers/routeHelper.php",
       "src/helpers/strHelper.php"
     ]

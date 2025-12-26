@@ -13,9 +13,11 @@ use Maher\CoreTools\Support\CoreToolsConstants;
 use Illuminate\Support\{Arr, Collection, Str};
 use Maher\CoreTools\Support\{StringHelper, ArrayToPhpConverter, ArrayComparator, ArrayHelper, CollectionHelper};
 use Illuminate\Contracts\Http\Kernel;
+use Maher\CoreTools\Security\Middleware\CheckRouteExistsMiddleware;
 
 class CoreToolsServiceProvider extends ServiceProvider
 {
+    private bool $securityEnabled = false;
     public function register(): void
     {
         $this->extendMacros();
@@ -24,20 +26,21 @@ class CoreToolsServiceProvider extends ServiceProvider
 
     public function boot(Kernel $kernel, Router $router): void
     {
+        $this->securityEnabled = config('core-tools.security.enabled', false);
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/core-tools.php' => config_path('core-tools.php'),
             ], 'core-tools-config');
-            $this->publishes([
+            /* $this->publishes([
                 __DIR__ . '/../resources/views' => base_path('resources/views/vendor/core-tools'),
             ], 'core-tools-views');
             $this->publishes([
                 __DIR__ . '/../database/migrations' => database_path('migrations'),
-            ], 'core-tools-migrations');
+            ], 'core-tools-migrations'); */
             $this->registerMigrations();
             //resources\views\errors\security.blade.php
         }
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'core-tools');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'core-tools-views');
         $this->registerCacheStores();
         $this->registerLoggingChannel();
         //HelpersLoader::load(__DIR__ . '/Helpers');
@@ -50,31 +53,45 @@ class CoreToolsServiceProvider extends ServiceProvider
      */
     protected function registerMigrations()
     {
-        if (CoreTools::shouldRunMigrations()) {
+        //
+        if ($this->securityEnabled && config('core-tools.security.blocked_ips.run_migrations', false) && CoreTools::shouldRunMigrations()) {
             return $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
     }
     protected function registerMiddlewares(Kernel $kernel, Router $router)
     {
-        if (config('core-tools.security.enabled', true)) {
+        if ($this->securityEnabled) {
 
             /**
              * 1️⃣ Register middleware alias (routes/controllers)
              * Works in Laravel 10, 11, 12
              */
-            $router->aliasMiddleware(
-                'core.security',
-                RequestSecurityMiddleware::class
-            );
-
+            $router->aliasMiddleware('core.security', RequestSecurityMiddleware::class);
             /**
              * 2️⃣ Register as GLOBAL middleware
              * Works in Laravel 10, 11, 12
              */
-            $kernel->pushMiddleware(
-                RequestSecurityMiddleware::class
-            );
+            $kernel->pushMiddleware(RequestSecurityMiddleware::class);
             //$kernel->appendMiddlewareToGroup('web', RequestSecurityMiddleware::class);
+            if (config('core-tools.security.check_routes.enabled', false)) {
+                $router->aliasMiddleware('core.check.route', CheckRouteExistsMiddleware::class);
+                $kernel->pushMiddleware(CheckRouteExistsMiddleware::class);
+            }
+        }
+    }
+    protected function registerLoggingChannel()
+    {
+        if ($this->securityEnabled) {
+            $channels = config('logging.channels');
+            $channel_key = CoreToolsConstants::SECURITY_LOGGING_CHANNEL_KEY;
+            if (!isset($channels[$channel_key])) {
+                $security_channel = config('core-tools.security.channel', [
+                    'driver' => 'daily',
+                    'path' => storage_path('logs/security.log'),
+                    'level' => 'warning',
+                ]);
+                Config::set("logging.channels.{$channel_key}", $security_channel);
+            }
         }
     }
     protected function registerCacheStores()
@@ -90,6 +107,7 @@ class CoreToolsServiceProvider extends ServiceProvider
                 'lock_path' =>  $cache_path,
                 'tags' => true,
             ]);
+            $cache_store['driver']=$cache_key;
             $stores[$cache_key] = $cache_store;
             Config::set("cache.stores.{$cache_key}",  $cache_store);
         }
@@ -102,20 +120,7 @@ class CoreToolsServiceProvider extends ServiceProvider
             return Cache::repository(new TaggedCustomCacheStore($cache_path));
         });
     }
-    protected function registerLoggingChannel()
-    {
 
-        $channels = Config::get('logging.channels');
-        $channel_key = CoreToolsConstants::SECURITY_LOGGING_CHANNEL_KEY;
-        if (!isset($channels[$channel_key])) {
-            $security_channel = Config::get('core-tools.security.channel', [
-                'driver' => 'daily',
-                'path' => storage_path('logs/security.log'),
-                'level' => 'warning',
-            ]);
-            Config::set("logging.channels.{$channel_key}", $security_channel);
-        }
-    }
     /**
      * Extend Laravel macros.
      */
@@ -138,7 +143,7 @@ class CoreToolsServiceProvider extends ServiceProvider
         Arr::macro('toCompactPhpString', fn(array $array, array $options = []): string => ArrayToPhpConverter::toCompactPhpString($array, $options));
         Arr::macro('saveToFile', fn(array $array, string $filename, array $options = []) => ArrayToPhpConverter::saveToFile($array, $filename, $options));
         //arrayDiffAssoc
-        Arr::macro('arrayDiffAssoc', fn(array $array1, array $array2, string $compare = 'both'): array => ArrayComparator::diff($array1, $array2, $compare));
+        Arr::macro('arrayDiffAssoc', fn(array $array1, array $array2, string $compare = 'both'): array => ArrayComparator::arrayDiffAssoc($array1, $array2, $compare));
         //merge
         Arr::macro('merge', fn(array $array1, array $array2): array => ArrayHelper::merge($array1, $array2));
         Arr::macro('toJsonArray', fn(array|object|null $data, int $depth = 512): string => ArrayHelper::toJsonArray($data, $depth));

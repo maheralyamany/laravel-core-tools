@@ -30,7 +30,7 @@ Homestead.json
 .phpactor.json
 auth.json
 artisan
-
+/.github
 .idea
 
 .php_cs.cache

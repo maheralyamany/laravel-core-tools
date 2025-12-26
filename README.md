@@ -19,7 +19,6 @@ Rate limiting
 
 Unified security middleware
 
-Event-driven security logging
 
 Audit trail
 
@@ -50,9 +49,9 @@ Suspicious payload detection (basic XSS checks)
 
 Unified security middleware
 
-Event-based security logging
 
-Flexible audit trail system
+
+
 
 🧰 Helpers
 
@@ -87,13 +86,12 @@ php artisan vendor:publish --tag=core-tools-config
 ⚙️ Configuration
 ```php
 <?php
-use Maher\CoreTools\Security\Models\CoreBlockIp;
 return [
     'modules' => [
-        'ip_guard' => true,
-        'rate_limit' => true,
-        'api_security' => true,
-        'audit' => true,
+        'ip_guard' => true,// if true check if ip address is blocked
+        'rate_limit' => true,// if true check max requests per minute
+        'api_security' => true,// if true check if Api request has token
+       
     ],
     'cache' => [
         'taged_cache_store' => [
@@ -104,15 +102,27 @@ return [
         ],
     ],
     'security' => [
+        'enabled' => false, // if true request security it will register CheckRouteExistsMiddleware ,RequestSecurityMiddleware  
         'channel' => [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
             'level' => 'warning',
         ],
+        'check_routes' => [
+            'enabled' => false,
+            // تجاهل بعض المسارات مثل assets أو api
+            'ignored_prefixes' => [
+                'api',
+                'sanctum',
+                'storage',
+                /* '_debugbar', 'vendor' */
+            ],
+        ],
         'blocked_ips' => [
-            'table_name'=>'core_block_ips',
-            'connection'=>null,
-            'model'=>CoreBlockIp::class,
+            'run_migrations' => false,
+            'table_name' => 'core_block_ips',
+            'connection' => null,
+            'model' => 'Maher\CoreTools\Security\Models\CoreBlockIp',
         ],
         'rate_limit' => [
             'enabled' => true,
@@ -121,15 +131,13 @@ return [
     ],
 ];
 
+
 ```
 🛡️ Security Middleware
 
 The middleware is registered automatically:
 ```php
-<?php
-Route::middleware('core.security')->group(function () {
-    Route::post('/api/data', fn () => 'secured');
-});
+\Maher\CoreTools\Security\Middleware\RequestSecurityMiddleware::class;
 ```
 
 
@@ -143,13 +151,7 @@ API token validation
 
 Payload inspection
 
-🧠 Event-Driven Security
 
-When a suspicious request is detected:
-
-A security event is dispatched
-
-A listener logs the incident
 
 Easy integration with:
 
@@ -227,7 +229,7 @@ Large Laravel codebases
 
 PHP 8.1+
 
-Laravel 10 / 11 / 12
+Laravel 10 / 11 / 12 or higher
 
 🛣️ Roadmap
 

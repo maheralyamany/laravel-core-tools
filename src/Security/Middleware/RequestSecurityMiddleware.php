@@ -8,10 +8,12 @@ use Maher\CoreTools\Security\Request\IpGuard;
 use Maher\CoreTools\Security\Request\RequestInspector;
 use Maher\CoreTools\Security\RateLimit\AdvancedRateLimiter;
 use Maher\CoreTools\Security\Api\ApiTokenInspector;
+use Maher\CoreTools\Security\Middleware\Traits\SecurityMiddlewareTrait;
 use Maher\CoreTools\Security\Request\RequestManager;
 
 class RequestSecurityMiddleware
 {
+    use SecurityMiddlewareTrait;
     public function handle(Request $request, Closure $next)
     {
         $hasMaliciousRequest = false;
@@ -22,7 +24,7 @@ class RequestSecurityMiddleware
             }
             if (config('core-tools.modules.ip_guard') && !(new IpGuard)->isAllowed($request)) {
                 $hasMaliciousRequest = true;
-                return $this->errorResponse($request,403,"Bad Request: Blocked Ip detected.");
+                return $this->errorResponse($request, 403, "Bad Request: Blocked Ip detected.");
             }
 
             if (config('core-tools.modules.rate_limit') && (new AdvancedRateLimiter)->tooManyAttempts($request)) {
@@ -44,22 +46,5 @@ class RequestSecurityMiddleware
             //throw $th;
         }
         return $next($request);
-    }
-    protected function errorResponse(Request $request, int $code = 403, $msg = null)
-    {
-        $msg = $msg ?? "Bad Request: Suspicious activity detected.";
-        try {
-            // Optionally: return custom error
-            if (isAjaxRequest($request)) {
-                return response()->json(["message" => $msg], $code);
-            }
-
-            return response()->view('core-tools::errors.security', ['code'=>$code,'message'=>$msg], $code);
-            // Option: block with 400 or 403
-            //abort(400, 'Bad Request: Suspicious activity detected.');
-        } catch (\Exception $th) {
-            //throw $th;
-            abort(400, $msg);
-        }
     }
 }

@@ -1,13 +1,10 @@
 <?php
-
-use Maher\CoreTools\Security\Models\CoreBlockIp;
-
 return [
     'modules' => [
-        'ip_guard' => true,
-        'rate_limit' => true,
-        'api_security' => true,
-        'audit' => true,
+        'ip_guard' => true,// if true check if ip address is blocked
+        'rate_limit' => true,// if true check max requests per minute
+        'api_security' => true,// if true check if Api request has token
+       
     ],
     'cache' => [
         'taged_cache_store' => [
@@ -18,16 +15,27 @@ return [
         ],
     ],
     'security' => [
-        'enabled' => true,
+        'enabled' => false, // if true request security it will register CheckRouteExistsMiddleware ,RequestSecurityMiddleware  
         'channel' => [
             'driver' => 'daily',
             'path' => storage_path('logs/security.log'),
             'level' => 'warning',
         ],
+        'check_routes' => [
+            'enabled' => false,
+            // تجاهل بعض المسارات مثل assets أو api
+            'ignored_prefixes' => [
+                'api',
+                'sanctum',
+                'storage',
+                /* '_debugbar', 'vendor' */
+            ],
+        ],
         'blocked_ips' => [
+            'run_migrations' => false,
             'table_name' => 'core_block_ips',
             'connection' => null,
-            'model' => CoreBlockIp::class,
+            'model' => 'Maher\CoreTools\Security\Models\CoreBlockIp',
         ],
         'rate_limit' => [
             'enabled' => true,

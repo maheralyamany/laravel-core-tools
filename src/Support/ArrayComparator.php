@@ -25,7 +25,13 @@ class ArrayComparator
                 return self::getItemsOnlyInFirst($array1, $array2);
         }
     }
-
+    /**
+     * استخراج العناصر الموجودة في المصفوفة الأولى وغير موجودة في الثانية
+     * @param array $array1
+     * @param array $array2
+     * @param string $compare in ('both','key','value')
+     * @return array
+     */
     public static function arrayDiffAssoc(array $array1, array $array2, string $compare = 'both')
     {
         return self::diff($array1, $array2, $compare);
@@ -44,14 +50,14 @@ class ArrayComparator
         if (count($keys) === count($items)) {
             return $doublicate;
         }
-        
+
         foreach ($keys as $key) {
             $f = $collect->filter(fn($v, $k) => $k === $key);
             if ($f->count() > 1) {
                 $doublicate[$key] = $f->values()->toArray();
             }
         }
-        
+
         return $doublicate;
     }
 
@@ -67,7 +73,7 @@ class ArrayComparator
         foreach ($diffKeys as $key) {
             $result[$key] = $array1[$key];
         }
-        
+
         return $result;
     }
 
@@ -96,7 +102,7 @@ class ArrayComparator
                 $result[$key] = $value;
             }
         }
-        
+
         return $result;
     }
 
@@ -117,7 +123,7 @@ class ArrayComparator
         if ($options['deep_compare']) {
             return self::deepDiff($array1, $array2, $options);
         }
-        
+
         return self::diff($array1, $array2, $options['compare']);
     }
 
@@ -146,7 +152,7 @@ class ArrayComparator
                 }
             }
         }
-        
+
         return $result;
     }
 
@@ -159,12 +165,12 @@ class ArrayComparator
             $value1 = strtolower($value1);
             $value2 = strtolower($value2);
         }
-        
+
         if ($options['ignore_order'] && is_array($value1) && is_array($value2)) {
             sort($value1);
             sort($value2);
         }
-        
+
         if ($options['strict_type']) {
             return $value1 === $value2;
         } else {
@@ -189,7 +195,7 @@ class ArrayComparator
                 foreach ($diffKeys as $key) {
                     $result['only_in_first'][$key] = $array1[$key];
                 }
-                
+
                 break;
             case 'value':
                 $values1 = array_values($array1);
@@ -208,10 +214,10 @@ class ArrayComparator
                         ];
                     }
                 }
-                
+
                 break;
         }
-        
+
         return $result;
     }
 
@@ -283,13 +289,13 @@ class ArrayComparator
                 $diff['identical'][$key] = $value;
             }
         }
-        
+
         foreach ($array2 as $key => $value) {
             if (!array_key_exists($key, $array1)) {
                 $diff['only_in_second'][$key] = $value;
             }
         }
-        
+
         return $diff;
     }
 
@@ -326,13 +332,13 @@ class ArrayComparator
                 }
             }
         }
-        
+
         foreach ($array2 as $key => $value) {
             if (!array_key_exists($key, $array1)) {
                 $diff['only_in_second'][$key] = $value;
             }
         }
-        
+
         return $diff;
     }
 
@@ -412,8 +418,7 @@ class ArrayComparator
                 $report[] = "العناصر المتطابقة تماماً: " . count($diff['identical']);
                 break;
         }
-        
+
         return implode("\n", $report);
     }
-
 }
